@@ -739,7 +739,7 @@
 
           <div class="form-group">
             <label class="form-label" for="username">
-              اسم المستخدم
+              البريد الإلكتروني
             </label>
 
             <div class="input-wrapper">
@@ -750,8 +750,8 @@
               <input
                 id="username"
                 name="username"
-                type="text"
-                placeholder="أدخل اسم المستخدم"
+                type="email"
+                placeholder="أدخل البريد الإلكتروني"
                 autocomplete="username"
                 required
               >
@@ -874,36 +874,37 @@
 
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    const SUPABASE_URL = "https://zncfwhytbcsacxyxyqls.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HiT50exMSJUb0jd8OW4O6g_U8WTL9vZ";
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
     const loginForm = document.getElementById("loginForm");
     const usernameInput = document.getElementById("username");
     const passwordInput = document.getElementById("password");
     const togglePassword = document.getElementById("togglePassword");
     const forgotPassword = document.getElementById("forgotPassword");
     const statusMessage = document.getElementById("statusMessage");
+    const submitButton = loginForm.querySelector('button[type="submit"]');
 
     document.getElementById("currentYear").textContent =
       new Date().getFullYear();
 
-    // إظهار كلمة المرور وإخفاؤها
     togglePassword.addEventListener("click", function () {
       const isHidden = passwordInput.type === "password";
-
       passwordInput.type = isHidden ? "text" : "password";
-
       togglePassword.innerHTML = isHidden
         ? '<i class="fa-regular fa-eye-slash" aria-hidden="true"></i>'
         : '<i class="fa-regular fa-eye" aria-hidden="true"></i>';
-
       togglePassword.setAttribute(
         "aria-label",
         isHidden ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"
       );
-
       togglePassword.setAttribute("aria-pressed", String(isHidden));
     });
 
-    // عرض رسائل الصفحة
     function showMessage(message, type = "info") {
       statusMessage.textContent = message;
       statusMessage.className = "status-message visible " + type;
@@ -917,39 +918,88 @@
     usernameInput.addEventListener("input", clearMessage);
     passwordInput.addEventListener("input", clearMessage);
 
-    // استعادة كلمة المرور
-    forgotPassword.addEventListener("click", function (event) {
-      event.preventDefault();
-
-      showMessage(
-        "لاستعادة كلمة المرور، يرجى التواصل مع مسؤول النظام. " +
-        "يمكن تفعيل الاستعادة بالبريد الإلكتروني عند ربط المصادقة.",
-        "info"
-      );
-    });
-
-    // نموذج الدخول: يتحقق من الحقول فقط في هذه النسخة
-    loginForm.addEventListener("submit", function (event) {
+    forgotPassword.addEventListener("click", async function (event) {
       event.preventDefault();
       clearMessage();
 
-      if (!usernameInput.value.trim()) {
-        showMessage("يرجى إدخال اسم المستخدم.", "error");
+      const email = usernameInput.value.trim();
+      if (!email) {
+        showMessage("أدخل بريدك الإلكتروني أولًا لاستعادة كلمة المرور.", "error");
         usernameInput.focus();
         return;
       }
 
-      if (!passwordInput.value) {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+
+      if (error) {
+        showMessage("تعذر إرسال رابط الاستعادة: " + error.message, "error");
+      } else {
+        showMessage("إذا كان البريد مسجلًا، فستصلك رسالة لاستعادة كلمة المرور.", "info");
+      }
+    });
+
+    loginForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      clearMessage();
+
+      const email = usernameInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      if (!email) {
+        showMessage("يرجى إدخال البريد الإلكتروني.", "error");
+        usernameInput.focus();
+        return;
+      }
+
+      if (!password) {
         showMessage("يرجى إدخال كلمة المرور.", "error");
         passwordInput.focus();
         return;
       }
 
-      showMessage(
-        "تم إدخال البيانات. يلزم ربط الصفحة بخدمة مصادقة آمنة " +
-        "حتى يصبح تسجيل الدخول فعليًا.",
-        "info"
-      );
+      submitButton.disabled = true;
+      submitButton.style.opacity = "0.75";
+      submitButton.querySelector("span").textContent = "جارٍ التحقق...";
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          showMessage("تعذر تسجيل الدخول. تحقق من البريد وكلمة المرور.", "error");
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabaseClient
+          .from("profiles")
+          .select("role, is_active, full_name")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        if (profileError || !profile || profile.is_active !== true ||
+            !["manager", "teacher"].includes(profile.role)) {
+          await supabaseClient.auth.signOut();
+          showMessage("هذا الحساب غير مفعّل أو لا يملك صلاحية الدخول. راجع مسؤول النظام.", "error");
+          return;
+        }
+
+        showMessage(
+          "تم تسجيل الدخول بنجاح" +
+          (profile.full_name ? "، " + profile.full_name : "") +
+          ". المصادقة فعّالة، لكن صفحة لوحة التحكم لم تُربط بعد.",
+          "info"
+        );
+      } catch (error) {
+        showMessage("حدث خطأ في الاتصال. تحقق من الإنترنت ثم حاول مجددًا.", "error");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.style.opacity = "";
+        submitButton.querySelector("span").textContent = "تسجيل الدخول";
+      }
     });
   </script>
 
