@@ -61,7 +61,13 @@
         <form id="addStudentForm">
           <div class="form-grid">
             <div class="field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
-            <div class="field"><label for="newStudentGroup">معرّف المجموعة (اختياري)</label><input id="newStudentGroup" name="group_id" placeholder="اتركه فارغًا إن لم تكن هناك مجموعة"></div>
+            <div class="field">
+              <label for="newStudentGroup">المجموعة (اختياري)</label>
+              <select id="newStudentGroup" name="group_id">
+                <option value="">بدون مجموعة</option>
+              </select>
+              <small>اختر مجموعة من القائمة، أو اترك الخيار «بدون مجموعة» إذا لم تكن هناك مجموعة.</small>
+            </div>
             <div class="field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
           </div>
           <div class="actions" style="margin-top:14px"><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button></div>
@@ -118,7 +124,24 @@ async function requireProfile(){
     document.querySelector('[data-view="groups"]').classList.add("hidden");
     document.querySelector('[data-view="overview"]').classList.add("hidden");
   }
+  await loadGroupOptions();
   return true;
+}
+async function loadGroupOptions(){
+  const select=$("newStudentGroup");
+  select.innerHTML='<option value="">بدون مجموعة</option>';
+  const {data,error}=await db.from("groups").select("*").limit(200);
+  if(error){
+    message("تعذر تحميل قائمة المجموعات. يمكنك إضافة الطالب بدون مجموعة. التفاصيل: "+error.message,"error");
+    return;
+  }
+  for(const group of (data||[])){
+    if(!group.id) continue;
+    const option=document.createElement("option");
+    option.value=group.id;
+    option.textContent=group.name||group.group_name||group.title||("مجموعة "+group.id);
+    select.appendChild(option);
+  }
 }
 async function addStudent(event){
   event.preventDefault();
@@ -127,7 +150,7 @@ async function addStudent(event){
   }
   const button=$("addStudentBtn");
   const fullName=$("newStudentName").value.trim();
-  const groupValue=$("newStudentGroup").value.trim();
+  const groupValue=$("newStudentGroup").value;
   const notes=$("newStudentNotes").value.trim();
   if(!fullName){message("يرجى إدخال اسم الطالب.","error");return;}
   button.disabled=true;button.textContent="جارٍ الحفظ...";
@@ -137,10 +160,13 @@ async function addStudent(event){
     created_by:currentProfile.id,
     notes:notes||null
   };
-  const {error}=await db.from("students").insert(student);
+  let result;
+  try { result=await db.from("students").insert(student); }
+  catch(err) { result={error:err}; }
+  const error=result?.error;
   button.disabled=false;button.textContent="حفظ الطالب";
   if(error){
-    message("تعذر حفظ الطالب. قد تكون هناك مشكلة في صلاحيات RLS أو في نوع معرّف المجموعة. التفاصيل: "+error.message,"error");
+    message("تعذر حفظ الطالب. تحقق من صلاحيات RLS وأعمدة جدول students. التفاصيل: "+error.message,"error");
     return;
   }
   $("addStudentForm").reset();
