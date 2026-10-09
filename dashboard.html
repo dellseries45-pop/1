@@ -109,7 +109,7 @@ async function requireProfile(){
 }
 async function loadStudents(){
   const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr>';
-  let query=db.from("students").select("*").order("created_at",{ascending:false}).limit(100);
+let query = db.from("students").select("full_name, group_id, created_by, notes, created_at, updated_at").order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
   const {data,error}=await query;
   if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. تحقق من أسماء الأعمدة وسياسات RLS.</td></tr>';return;}
