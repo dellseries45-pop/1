@@ -987,12 +987,8 @@
           return;
         }
 
-        showMessage(
-          "تم تسجيل الدخول بنجاح" +
-          (profile.full_name ? "، " + profile.full_name : "") +
-          ". المصادقة فعّالة، لكن صفحة لوحة التحكم لم تُربط بعد.",
-          "info"
-        );
+window.location.replace("./dashboard.html");
+return;
       } catch (error) {
         showMessage("حدث خطأ في الاتصال. تحقق من الإنترنت ثم حاول مجددًا.", "error");
       } finally {
