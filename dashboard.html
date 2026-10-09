@@ -21,7 +21,7 @@
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px}.card{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 4px 15px #183a5508}
     .metric-label{color:var(--muted);font-size:14px}.metric{font-size:30px;font-weight:800;margin-top:8px;color:var(--navy)}
     .panel{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}.panel h2{font-size:19px;margin:0}
-    .tools{display:flex;gap:10px;flex-wrap:wrap}.tools input,.tools select,.field input,.field select{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:white;min-width:0}
+    .tools{display:flex;gap:10px;flex-wrap:wrap}.tools input,.tools select,.field input,.field select,.field textarea{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:white;min-width:0}.field textarea{font:inherit;resize:vertical;min-height:85px}
     .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:right;padding:13px 12px;border-bottom:1px solid #edf0f4;font-size:14px}th{color:var(--muted);font-weight:700;background:#fafbfd}
     .empty{text-align:center;color:var(--muted);padding:28px}.tag{display:inline-block;padding:4px 9px;border-radius:20px;background:#e8f7f3;color:#08785f;font-size:12px}
     .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.field{display:grid;gap:7px}.field label{font-size:14px;font-weight:700}.field input,.field select{width:100%}
@@ -56,6 +56,17 @@
       <div class="panel"><div class="panel-head"><h2>مرحبًا بك في لوحة الإدارة</h2></div><p>هذه نسخة أولية متصلة بقاعدة البيانات لعرض البيانات. إنشاء حسابات المعلمين يتم عبر وظيفة الخادم الآمنة بعد اختبارها.</p></div>
     </section>
     <section id="studentsView" class="hidden">
+      <div class="panel" id="addStudentPanel">
+        <div class="panel-head"><h2>إضافة طالب جديد</h2></div>
+        <form id="addStudentForm">
+          <div class="form-grid">
+            <div class="field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
+            <div class="field"><label for="newStudentGroup">معرّف المجموعة (اختياري)</label><input id="newStudentGroup" name="group_id" placeholder="اتركه فارغًا إن لم تكن هناك مجموعة"></div>
+            <div class="field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
+          </div>
+          <div class="actions" style="margin-top:14px"><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button></div>
+        </form>
+      </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
         <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th></tr></thead><tbody id="studentsRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
@@ -91,6 +102,7 @@ document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener
 $("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();location.replace("./index.html");});
 $("refreshBtn").addEventListener("click",loadDashboard);
 $("searchStudents").addEventListener("click",loadStudents);
+$("addStudentForm").addEventListener("submit", addStudent);
 async function requireProfile(){
   const {data:{user},error}=await db.auth.getUser();
   if(error||!user){location.replace("./index.html");return false;}
@@ -101,15 +113,47 @@ async function requireProfile(){
   currentProfile={...profile,id:user.id};
   $("welcome").textContent=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
   if(profile.role!=="manager"){
+    $("addStudentPanel").classList.add("hidden");
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
     document.querySelector('[data-view="groups"]').classList.add("hidden");
     document.querySelector('[data-view="overview"]').classList.add("hidden");
   }
   return true;
 }
+async function addStudent(event){
+  event.preventDefault();
+  if(!currentProfile || currentProfile.role!=="manager"){
+    message("إضافة الطلاب متاحة للمدير فقط حاليًا.","error");return;
+  }
+  const button=$("addStudentBtn");
+  const fullName=$("newStudentName").value.trim();
+  const groupValue=$("newStudentGroup").value.trim();
+  const notes=$("newStudentNotes").value.trim();
+  if(!fullName){message("يرجى إدخال اسم الطالب.","error");return;}
+  button.disabled=true;button.textContent="جارٍ الحفظ...";
+  const student={
+    full_name:fullName,
+    group_id:groupValue||null,
+    created_by:currentProfile.id,
+    notes:notes||null
+  };
+  const {error}=await db.from("students").insert(student);
+  button.disabled=false;button.textContent="حفظ الطالب";
+  if(error){
+    message("تعذر حفظ الطالب. قد تكون هناك مشكلة في صلاحيات RLS أو في نوع معرّف المجموعة. التفاصيل: "+error.message,"error");
+    return;
+  }
+  $("addStudentForm").reset();
+  message("تمت إضافة الطالب بنجاح.","info");
+  await loadStudents();
+  if(currentProfile.role==="manager"){
+    const {count,error:countError}=await db.from("students").select("*",{count:"exact",head:true});
+    if(!countError)$("studentsCount").textContent=count??0;
+  }
+}
 async function loadStudents(){
   const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr>';
-let query = db.from("students").select("full_name, group_id, created_by, notes, created_at, updated_at").order("created_at", { ascending: false }).limit(100);
+let query = db.from("students").select("id, full_name, group_id, created_by, notes, created_at, updated_at").order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
   const {data,error}=await query;
   if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. تحقق من أسماء الأعمدة وسياسات RLS.</td></tr>';return;}
