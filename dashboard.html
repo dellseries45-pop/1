@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10283f">
+  <title>لوحة التحكم | أكاديمية تزكى</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#10283f;--teal:#078b91;--gold:#d5ad62;--bg:#f3f6fa;--text:#19334b;--muted:#718096;--border:#dce4ed;--danger:#c94350}
+    *{box-sizing:border-box}body{margin:0;font-family:"Tajawal",sans-serif;background:var(--bg);color:var(--text)}
+    button,input,select{font:inherit}button{cursor:pointer}.shell{min-height:100vh;display:grid;grid-template-columns:260px 1fr}
+    aside{background:var(--navy);color:white;padding:25px 18px}.brand{font-size:24px;font-weight:800;padding:8px 10px 25px;border-bottom:1px solid #ffffff25}.brand span{color:var(--gold)}
+    .nav{display:grid;gap:8px;margin-top:24px}.nav button{border:0;border-radius:10px;text-align:right;padding:13px 14px;background:transparent;color:#e6edf4}.nav button.active,.nav button:hover{background:#ffffff17;color:white}
+    .side-note{margin:35px 10px 0;font-size:13px;color:#bdcad7;line-height:1.8}
+    main{padding:28px;min-width:0}.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+    h1{font-size:27px;margin:0;color:var(--navy)}.sub{color:var(--muted);margin-top:6px}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{border:0;border-radius:9px;padding:11px 15px;font-weight:700}.primary{background:var(--teal);color:white}.secondary{background:white;border:1px solid var(--border);color:var(--navy)}.danger{background:#fff0f1;color:var(--danger)}
+    .notice{display:none;padding:12px 15px;border-radius:10px;margin:0 0 18px;line-height:1.7}.notice.show{display:block}.notice.error{background:#fff0f1;color:#a52b39}.notice.info{background:#eaf7f7;color:#066b70}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px}.card{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 4px 15px #183a5508}
+    .metric-label{color:var(--muted);font-size:14px}.metric{font-size:30px;font-weight:800;margin-top:8px;color:var(--navy)}
+    .panel{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}.panel h2{font-size:19px;margin:0}
+    .tools{display:flex;gap:10px;flex-wrap:wrap}.tools input,.tools select,.field input,.field select{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:white;min-width:0}
+    .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:right;padding:13px 12px;border-bottom:1px solid #edf0f4;font-size:14px}th{color:var(--muted);font-weight:700;background:#fafbfd}
+    .empty{text-align:center;color:var(--muted);padding:28px}.tag{display:inline-block;padding:4px 9px;border-radius:20px;background:#e8f7f3;color:#08785f;font-size:12px}
+    .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.field{display:grid;gap:7px}.field label{font-size:14px;font-weight:700}.field input,.field select{width:100%}
+    .hidden{display:none!important}.footer{color:var(--muted);font-size:12px;text-align:center;padding:10px}
+    @media(max-width:850px){.shell{grid-template-columns:1fr}aside{padding:15px}.brand{padding-bottom:14px}.nav{display:flex;overflow:auto;margin-top:12px}.nav button{white-space:nowrap}.side-note{display:none}main{padding:17px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">أكاديمية <span>تزكى</span></div>
+    <nav class="nav" aria-label="القائمة الرئيسية">
+      <button class="active" data-view="overview">نظرة عامة</button>
+      <button data-view="students">الطلاب</button>
+      <button data-view="teachers">المعلمون</button>
+      <button data-view="groups">المجموعات</button>
+    </nav>
+    <p class="side-note">بوابة الإدارة<br>تظهر البيانات بحسب صلاحيات الحساب المسجّل.</p>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div><h1 id="pageTitle">نظرة عامة</h1><p class="sub" id="welcome">جارٍ التحقق من الجلسة...</p></div>
+      <div class="actions"><button class="btn secondary" id="refreshBtn">تحديث البيانات</button><button class="btn danger" id="logoutBtn">تسجيل الخروج</button></div>
+    </header>
+    <div id="notice" class="notice" role="status"></div>
+    <section id="overviewView">
+      <div class="cards">
+        <div class="card"><div class="metric-label">إجمالي الطلاب</div><div class="metric" id="studentsCount">—</div></div>
+        <div class="card"><div class="metric-label">المجموعات</div><div class="metric" id="groupsCount">—</div></div>
+        <div class="card"><div class="metric-label">حسابات المعلمين</div><div class="metric" id="teachersCount">—</div></div>
+      </div>
+      <div class="panel"><div class="panel-head"><h2>مرحبًا بك في لوحة الإدارة</h2></div><p>هذه نسخة أولية متصلة بقاعدة البيانات لعرض البيانات. إنشاء حسابات المعلمين يتم عبر وظيفة الخادم الآمنة بعد اختبارها.</p></div>
+    </section>
+    <section id="studentsView" class="hidden">
+      <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th></tr></thead><tbody id="studentsRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="teachersView" class="hidden">
+      <div class="panel"><div class="panel-head"><h2>المعلمون</h2><span class="tag">عرض الحسابات فقط حاليًا</span></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الحالة</th><th>المعرّف</th></tr></thead><tbody id="teachersRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="groupsView" class="hidden">
+      <div class="panel"><div class="panel-head"><h2>المجموعات</h2></div>
+        <div class="table-wrap"><table><thead><tr><th>اسم المجموعة</th><th>المعرّف</th></tr></thead><tbody id="groupsRows"><tr><td colspan="2" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <p class="footer">أكاديمية تزكى — لوحة تحكم أولية</p>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://zncfwhytbcsacxyxyqls.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HiT50exMSJUb0jd8OW4O6g_U8WTL9vZ";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const $ = id => document.getElementById(id);
+let currentProfile = null;
+function message(text, type="info"){ $("notice").textContent=text; $("notice").className="notice show "+type; }
+function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+function showView(view){
+  ["overview","students","teachers","groups"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
+  document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
+  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"المجموعات"})[view];
+}
+document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
+$("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();location.replace("./index.html");});
+$("refreshBtn").addEventListener("click",loadDashboard);
+$("searchStudents").addEventListener("click",loadStudents);
+async function requireProfile(){
+  const {data:{user},error}=await db.auth.getUser();
+  if(error||!user){location.replace("./index.html");return false;}
+  const {data:profile,error:profileError}=await db.from("profiles").select("role,is_active,full_name").eq("id",user.id).maybeSingle();
+  if(profileError||!profile||profile.is_active!==true||!["manager","teacher"].includes(profile.role)){
+    await db.auth.signOut();location.replace("./index.html");return false;
+  }
+  currentProfile={...profile,id:user.id};
+  $("welcome").textContent=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
+  if(profile.role!=="manager"){
+    document.querySelector('[data-view="teachers"]').classList.add("hidden");
+    document.querySelector('[data-view="groups"]').classList.add("hidden");
+    document.querySelector('[data-view="overview"]').classList.add("hidden");
+  }
+  return true;
+}
+async function loadStudents(){
+  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr>';
+  let query=db.from("students").select("*").order("created_at",{ascending:false}).limit(100);
+  if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
+  const {data,error}=await query;
+  if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. تحقق من أسماء الأعمدة وسياسات RLS.</td></tr>';return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="3" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
+  tbody.innerHTML=data.map(row=>`<tr><td>${escapeHtml(row.full_name||row.name||"—")}</td><td>${escapeHtml(row.group_id||"—")}</td><td>${escapeHtml(row.id||"—")}</td></tr>`).join("");
+}
+async function loadTeachers(){
+  const tbody=$("teachersRows");
+  const {data,error}=await db.from("profiles").select("id,full_name,is_active,role").eq("role","teacher").order("full_name").limit(100);
+  if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل المعلمين.</td></tr>';return;}
+  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.full_name||"—")}</td><td>${row.is_active?'<span class="tag">نشط</span>':'غير نشط'}</td><td>${escapeHtml(row.id)}</td></tr>`).join(""):'<tr><td colspan="3" class="empty">لا توجد حسابات معلمين.</td></tr>';
+}
+async function loadGroups(){
+  const tbody=$("groupsRows");
+  const {data,error}=await db.from("groups").select("*").limit(100);
+  if(error){tbody.innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل المجموعات.</td></tr>';return;}
+  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.name||row.group_name||"—")}</td><td>${escapeHtml(row.id||"—")}</td></tr>`).join(""):'<tr><td colspan="2" class="empty">لا توجد مجموعات.</td></tr>';
+}
+async function loadDashboard(){
+  const ok=await requireProfile();if(!ok)return;
+  await loadStudents();
+  if(currentProfile.role==="manager"){
+    await Promise.all([loadTeachers(),loadGroups()]);
+    const [{count:studentsCount},{count:groupsCount},{count:teachersCount}] = await Promise.all([
+      db.from("students").select("*",{count:"exact",head:true}),
+      db.from("groups").select("*",{count:"exact",head:true}),
+      db.from("profiles").select("*",{count:"exact",head:true}).eq("role","teacher")
+    ]);
+    $("studentsCount").textContent=studentsCount??"—";
+    $("groupsCount").textContent=groupsCount??"—";
+    $("teachersCount").textContent=teachersCount??"—";
+  }else{
+    showView("students");
+  }
+}
+loadDashboard();
+</script>
+</body>
+</html>
