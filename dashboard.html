@@ -119,7 +119,7 @@ async function requireProfile(){
   currentProfile={...profile,id:user.id};
   $("welcome").textContent=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
   if(profile.role!=="manager"){
-    $("addStudentPanel").classList.add("hidden");
+    // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
     document.querySelector('[data-view="groups"]').classList.add("hidden");
     document.querySelector('[data-view="overview"]').classList.add("hidden");
@@ -145,8 +145,8 @@ async function loadGroupOptions(){
 }
 async function addStudent(event){
   event.preventDefault();
-  if(!currentProfile || currentProfile.role!=="manager"){
-    message("إضافة الطلاب متاحة للمدير فقط حاليًا.","error");return;
+  if(!currentProfile || !["manager","teacher"].includes(currentProfile.role)){
+    message("لا تملك صلاحية إضافة الطلاب.","error");return;
   }
   const button=$("addStudentBtn");
   const fullName=$("newStudentName").value.trim();
@@ -179,12 +179,29 @@ async function addStudent(event){
 }
 async function loadStudents(){
   const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr>';
-let query = db.from("students").select("id, full_name, group_id, created_by, notes, created_at, updated_at").order("created_at", { ascending: false }).limit(100);
+let query = db.from("students")
+    .select("id, full_name, group_id, created_by, notes, created_at, updated_at")
+    .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
   const {data,error}=await query;
-  if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. تحقق من أسماء الأعمدة وسياسات RLS.</td></tr>';return;}
+  if(error){
+    tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
+    message("تعذر تحميل الطلاب: "+error.message,"error");
+    return;
+  }
   if(!data?.length){tbody.innerHTML='<tr><td colspan="3" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
-  tbody.innerHTML=data.map(row=>`<tr><td>${escapeHtml(row.full_name||row.name||"—")}</td><td>${escapeHtml(row.group_id||"—")}</td><td>${escapeHtml(row.id||"—")}</td></tr>`).join("");
+
+  const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
+  let groupNames={};
+  if(groupIds.length){
+    const {data:groups,error:groupsError}=await db.from("groups").select("id,name").in("id",groupIds);
+    if(!groupsError) groupNames=Object.fromEntries((groups||[]).map(group=>[group.id,group.name]));
+  }
+  tbody.innerHTML=data.map(row=>`<tr>
+    <td>${escapeHtml(row.full_name||"—")}</td>
+    <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
+    <td>${escapeHtml(row.id||"—")}</td>
+  </tr>`).join("");
 }
 async function loadTeachers(){
   const tbody=$("teachersRows");
