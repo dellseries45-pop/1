@@ -78,7 +78,19 @@
       </div>
     </section>
     <section id="teachersView" class="hidden">
-      <div class="panel"><div class="panel-head"><h2>المعلمون</h2><span class="tag">عرض الحسابات فقط حاليًا</span></div>
+      <div class="panel" id="createTeacherPanel">
+        <div class="panel-head"><h2>إنشاء حساب معلم</h2></div>
+        <form id="createTeacherForm">
+          <div class="form-grid">
+            <div class="field"><label for="teacherFullName">اسم المعلم *</label><input id="teacherFullName" required maxlength="150" autocomplete="name"></div>
+            <div class="field"><label for="teacherEmail">البريد الإلكتروني *</label><input id="teacherEmail" type="email" required autocomplete="email"></div>
+            <div class="field"><label for="teacherPassword">كلمة المرور (8 أحرف على الأقل) *</label><input id="teacherPassword" type="password" required minlength="8" autocomplete="new-password"></div>
+          </div>
+          <div class="actions" style="margin-top:14px"><button class="btn primary" id="createTeacherBtn" type="submit">إنشاء حساب المعلم</button></div>
+          <p class="sub">قد يحتاج المعلم إلى تأكيد بريده الإلكتروني قبل تسجيل الدخول، بحسب إعدادات Supabase.</p>
+        </form>
+      </div>
+      <div class="panel"><div class="panel-head"><h2>المعلمون</h2></div>
         <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الحالة</th><th>المعرّف</th></tr></thead><tbody id="teachersRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
@@ -109,6 +121,7 @@ $("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();locati
 $("refreshBtn").addEventListener("click",loadDashboard);
 $("searchStudents").addEventListener("click",loadStudents);
 $("addStudentForm").addEventListener("submit", addStudent);
+$("createTeacherForm").addEventListener("submit", createTeacher);
 async function requireProfile(){
   const {data:{user},error}=await db.auth.getUser();
   if(error||!user){location.replace("./index.html");return false;}
@@ -119,6 +132,7 @@ async function requireProfile(){
   currentProfile={...profile,id:user.id};
   $("welcome").textContent=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
   if(profile.role!=="manager"){
+    $("createTeacherPanel").classList.add("hidden");
     // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
     document.querySelector('[data-view="groups"]').classList.add("hidden");
@@ -202,6 +216,48 @@ let query = db.from("students")
     <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
     <td>${escapeHtml(row.id||"—")}</td>
   </tr>`).join("");
+}
+async function createTeacher(event){
+  event.preventDefault();
+  if(!currentProfile || currentProfile.role!=="manager"){
+    message("إنشاء حسابات المعلمين متاح للمدير فقط.","error"); return;
+  }
+  const button=$("createTeacherBtn");
+  const fullName=$("teacherFullName").value.trim();
+  const email=$("teacherEmail").value.trim().toLowerCase();
+  const password=$("teacherPassword").value;
+  if(!fullName || !email || password.length<8){
+    message("أدخل الاسم والبريد وكلمة مرور من 8 أحرف على الأقل.","error"); return;
+  }
+  button.disabled=true; button.textContent="جارٍ إنشاء الحساب...";
+  try{
+    const {data,error}=await db.functions.invoke("create-teacher",{
+      body:{full_name:fullName,email,password}
+    });
+    if(error){
+      let details=error.message||"تعذر الاتصال بوظيفة إنشاء المعلم.";
+      try{
+        if(error.context && typeof error.context.json==="function"){
+          const body=await error.context.json();
+          if(body && body.error) details=body.error;
+        }
+      }catch(_){}
+      message("تعذر إنشاء حساب المعلم: "+details,"error");
+      return;
+    }
+    if(data && data.error){
+      message("تعذر إنشاء حساب المعلم: "+data.error,"error"); return;
+    }
+    $("createTeacherForm").reset();
+    message((data && data.message)||"تم إنشاء حساب المعلم بنجاح.","info");
+    await loadTeachers();
+    const {count,error:countError}=await db.from("profiles").select("*",{count:"exact",head:true}).eq("role","teacher");
+    if(!countError) $("teachersCount").textContent=count??0;
+  }catch(err){
+    message("حدث خطأ أثناء إنشاء حساب المعلم: "+(err && err.message || "خطأ غير معروف"),"error");
+  }finally{
+    button.disabled=false; button.textContent="إنشاء حساب المعلم";
+  }
 }
 async function loadTeachers(){
   const tbody=$("teachersRows");
