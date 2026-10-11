@@ -57,8 +57,9 @@
     </section>
     <section id="studentsView" class="hidden">
       <div class="panel" id="addStudentPanel">
-        <div class="panel-head"><h2>إضافة طالب جديد</h2></div>
+        <div class="panel-head"><h2 id="studentFormTitle">إضافة طالب جديد</h2></div>
         <form id="addStudentForm">
+          <input type="hidden" id="editingStudentId">
           <div class="form-grid">
             <div class="field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
             <div class="field">
@@ -70,11 +71,11 @@
             </div>
             <div class="field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
           </div>
-          <div class="actions" style="margin-top:14px"><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button></div>
+          <div class="actions" style="margin-top:14px"><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button><button class="btn secondary hidden" id="cancelStudentEditBtn" type="button">إلغاء التعديل</button></div>
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th></tr></thead><tbody id="studentsRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
@@ -91,7 +92,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>المعلمون</h2></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الحالة</th><th>المعرّف</th></tr></thead><tbody id="teachersRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الحالة</th><th>المعرّف</th></tr></thead><tbody id="teachersRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="groupsView" class="hidden">
@@ -135,6 +136,7 @@ $("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();locati
 $("refreshBtn").addEventListener("click",loadDashboard);
 $("searchStudents").addEventListener("click",loadStudents);
 $("addStudentForm").addEventListener("submit", addStudent);
+$("cancelStudentEditBtn").addEventListener("click", resetStudentForm);
 $("createTeacherForm").addEventListener("submit", createTeacher);
 $("groupForm").addEventListener("submit", saveGroup);
 $("cancelGroupEditBtn").addEventListener("click", resetGroupForm);
@@ -174,34 +176,64 @@ async function loadGroupOptions(){
     select.appendChild(option);
   }
 }
+function resetStudentForm(){
+  $("addStudentForm").reset();
+  $("editingStudentId").value="";
+  $("studentFormTitle").textContent="إضافة طالب جديد";
+  $("addStudentBtn").textContent="حفظ الطالب";
+  $("cancelStudentEditBtn").classList.add("hidden");
+}
+function editStudent(row){
+  if(!currentProfile || (currentProfile.role!=="manager" && row.created_by!==currentProfile.id)){
+    message("يمكن للمعلم تعديل بيانات الطلاب الذين أضافهم بنفسه فقط.","error");return;
+  }
+  $("editingStudentId").value=row.id;
+  $("newStudentName").value=row.full_name||"";
+  $("newStudentGroup").value=row.group_id||"";
+  $("newStudentNotes").value=row.notes||"";
+  $("studentFormTitle").textContent="تعديل بيانات الطالب";
+  $("addStudentBtn").textContent="حفظ التعديلات";
+  $("cancelStudentEditBtn").classList.remove("hidden");
+  $("addStudentForm").scrollIntoView({behavior:"smooth",block:"start"});
+}
 async function addStudent(event){
   event.preventDefault();
   if(!currentProfile || !["manager","teacher"].includes(currentProfile.role)){
-    message("لا تملك صلاحية إضافة الطلاب.","error");return;
+    message("لا تملك صلاحية إضافة أو تعديل الطلاب.","error");return;
   }
   const button=$("addStudentBtn");
   const fullName=$("newStudentName").value.trim();
   const groupValue=$("newStudentGroup").value;
   const notes=$("newStudentNotes").value.trim();
+  const editingId=$("editingStudentId").value;
   if(!fullName){message("يرجى إدخال اسم الطالب.","error");return;}
-  button.disabled=true;button.textContent="جارٍ الحفظ...";
-  const student={
-    full_name:fullName,
-    group_id:groupValue||null,
-    created_by:currentProfile.id,
-    notes:notes||null
-  };
+  if(editingId && currentProfile.role==="teacher"){
+    const {data:ownedStudent,error:ownerError}=await db.from("students").select("id,created_by").eq("id",editingId).maybeSingle();
+    if(ownerError || !ownedStudent || ownedStudent.created_by!==currentProfile.id){
+      message("لا يمكنك تعديل هذا الطالب؛ يسمح للمعلم بتعديل الطلاب الذين أضافهم بنفسه فقط.","error");return;
+    }
+  }
+  button.disabled=true;button.textContent=editingId?"جارٍ حفظ التعديلات...":"جارٍ الحفظ...";
+  const student={full_name:fullName,group_id:groupValue||null,notes:notes||null};
   let result;
-  try { result=await db.from("students").insert(student); }
-  catch(err) { result={error:err}; }
+  try {
+    if(editingId){
+      let query=db.from("students").update(student).eq("id",editingId);
+      if(currentProfile.role==="teacher") query=query.eq("created_by",currentProfile.id);
+      result=await query;
+    }else{
+      student.created_by=currentProfile.id;
+      result=await db.from("students").insert(student);
+    }
+  } catch(err) { result={error:err}; }
   const error=result?.error;
-  button.disabled=false;button.textContent="حفظ الطالب";
+  button.disabled=false;button.textContent=editingId?"حفظ التعديلات":"حفظ الطالب";
   if(error){
-    message("تعذر حفظ الطالب. تحقق من صلاحيات RLS وأعمدة جدول students. التفاصيل: "+error.message,"error");
+    message("تعذر حفظ بيانات الطالب. تحقق من صلاحيات RLS وأعمدة جدول students. التفاصيل: "+error.message,"error");
     return;
   }
-  $("addStudentForm").reset();
-  message("تمت إضافة الطالب بنجاح.","info");
+  resetStudentForm();
+  message(editingId?"تم تحديث بيانات الطالب بنجاح.":"تمت إضافة الطالب بنجاح.","info");
   await loadStudents();
   if(currentProfile.role==="manager"){
     const {count,error:countError}=await db.from("students").select("*",{count:"exact",head:true});
@@ -209,18 +241,18 @@ async function addStudent(event){
   }
 }
 async function loadStudents(){
-  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr>';
+  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr>';
 let query = db.from("students")
     .select("id, full_name, group_id, created_by, notes, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
   const {data,error}=await query;
   if(error){
-    tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
     message("تعذر تحميل الطلاب: "+error.message,"error");
     return;
   }
-  if(!data?.length){tbody.innerHTML='<tr><td colspan="3" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
 
   const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
   let groupNames={};
@@ -228,11 +260,21 @@ let query = db.from("students")
     const {data:groups,error:groupsError}=await db.from("groups").select("id,name").in("id",groupIds);
     if(!groupsError) groupNames=Object.fromEntries((groups||[]).map(group=>[group.id,group.name]));
   }
-  tbody.innerHTML=data.map(row=>`<tr>
-    <td>${escapeHtml(row.full_name||"—")}</td>
-    <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
-    <td>${escapeHtml(row.id||"—")}</td>
-  </tr>`).join("");
+  tbody.innerHTML=data.map(row=>{
+    const canEdit=currentProfile?.role==="manager" || row.created_by===currentProfile?.id;
+    return `<tr>
+      <td>${escapeHtml(row.full_name||"—")}</td>
+      <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
+      <td>${escapeHtml(row.id||"—")}</td>
+      <td>${canEdit?`<button class="btn secondary" type="button" data-edit-student="${escapeHtml(row.id)}">تعديل</button>`:'—'}</td>
+    </tr>`;
+  }).join("");
+  tbody.querySelectorAll("[data-edit-student]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      const row=(data||[]).find(item=>item.id===button.dataset.editStudent);
+      if(row) editStudent(row);
+    });
+  });
 }
 async function createTeacher(event){
   event.preventDefault();
