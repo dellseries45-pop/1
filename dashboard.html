@@ -75,7 +75,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>أنشأه</th><th>المعرّف</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
@@ -179,6 +179,7 @@ async function loadGroupOptions(){
 function resetStudentForm(){
   $("addStudentForm").reset();
   $("editingStudentId").value="";
+  $("newStudentGroup").disabled=false;
   $("studentFormTitle").textContent="إضافة طالب جديد";
   $("addStudentBtn").textContent="حفظ الطالب";
   $("cancelStudentEditBtn").classList.add("hidden");
@@ -190,6 +191,8 @@ function editStudent(row){
   $("editingStudentId").value=row.id;
   $("newStudentName").value=row.full_name||"";
   $("newStudentGroup").value=row.group_id||"";
+  // إعادة إسناد الطالب إلى مجموعة أخرى للمدير فقط حفاظًا على حدود حلقات المعلمين.
+  $("newStudentGroup").disabled=currentProfile.role!=="manager";
   $("newStudentNotes").value=row.notes||"";
   $("studentFormTitle").textContent="تعديل بيانات الطالب";
   $("addStudentBtn").textContent="حفظ التعديلات";
@@ -241,18 +244,18 @@ async function addStudent(event){
   }
 }
 async function loadStudents(){
-  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr>';
+  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr>';
 let query = db.from("students")
     .select("id, full_name, group_id, created_by, notes, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
   const {data,error}=await query;
   if(error){
-    tbody.innerHTML='<tr><td colspan="4" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
     message("تعذر تحميل الطلاب: "+error.message,"error");
     return;
   }
-  if(!data?.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
 
   const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
   let groupNames={};
@@ -260,11 +263,19 @@ let query = db.from("students")
     const {data:groups,error:groupsError}=await db.from("groups").select("id,name").in("id",groupIds);
     if(!groupsError) groupNames=Object.fromEntries((groups||[]).map(group=>[group.id,group.name]));
   }
+  const creatorIds=[...new Set(data.map(row=>row.created_by).filter(Boolean))];
+  let creatorNames={};
+  if(creatorIds.length){
+    const {data:creators,error:creatorsError}=await db.from("profiles").select("id,full_name").in("id",creatorIds);
+    if(!creatorsError) creatorNames=Object.fromEntries((creators||[]).map(person=>[person.id,person.full_name||"اسم غير مسجل"]));
+  }
   tbody.innerHTML=data.map(row=>{
     const canEdit=currentProfile?.role==="manager" || row.created_by===currentProfile?.id;
+    const creatorLabel=row.created_by ? (creatorNames[row.created_by] || (row.created_by===currentProfile?.id ? (currentProfile.full_name||"أنت") : "المنشئ غير متاح")) : "غير محدد";
     return `<tr>
       <td>${escapeHtml(row.full_name||"—")}</td>
       <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
+      <td>${escapeHtml(creatorLabel)}</td>
       <td>${escapeHtml(row.id||"—")}</td>
       <td>${canEdit?`<button class="btn secondary" type="button" data-edit-student="${escapeHtml(row.id)}">تعديل</button>`:'—'}</td>
     </tr>`;
