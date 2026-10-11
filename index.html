@@ -424,26 +424,22 @@
       max-width: 440px;
     }
 
-    .logo-placeholder {
-      width: 82px;
-      height: 82px;
+    .academy-logo {
+      width: 84px;
+      height: 84px;
       margin: 0 auto 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
+      object-fit: contain;
       border: 1px solid rgba(213, 173, 98, .85);
       border-radius: 20px;
-      color: var(--gold);
-      background: rgba(11, 37, 58, .55);
+      padding: 5px;
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .16);
       transition: transform .25s;
     }
 
-    .logo-placeholder:hover {
+    .academy-logo:hover {
       transform: translateY(-3px);
-    }
-
-    .logo-placeholder i {
-      font-size: 34px;
     }
 
     .logo-note {
@@ -561,9 +557,9 @@
         margin-top: 7px;
       }
 
-      .logo-placeholder {
-        width: 65px;
-        height: 65px;
+      .academy-logo {
+        width: 74px;
+        height: 74px;
       }
 
       .academy-name {
@@ -607,15 +603,11 @@
         padding: 5px 8px 23px;
       }
 
-      .logo-placeholder {
-        width: 54px;
-        height: 54px;
+      .academy-logo {
+        width: 62px;
+        height: 62px;
         margin-bottom: 7px;
         border-radius: 14px;
-      }
-
-      .logo-placeholder i {
-        font-size: 24px;
       }
 
       .logo-note {
@@ -835,10 +827,15 @@
     <section class="brand-section" aria-label="هوية الأكاديمية">
       <div class="brand-content">
 
-        <!-- مكان مخصص لإضافة شعار الأكاديمية -->
-        <div class="logo-placeholder" aria-label="مكان شعار الأكاديمية">
-          <i class="fa-regular fa-image" aria-hidden="true"></i>
-        </div>
+        <!-- شعار أكاديمية تزكى -->
+        <img
+          src="https://i.imgur.com/cdRvZEW.jpg"
+          alt="شعار أكاديمية تزكى"
+          class="academy-logo"
+          width="84"
+          height="84"
+          decoding="async"
+        >
 
         <p class="logo-note"></p>
 
