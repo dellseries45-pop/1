@@ -81,7 +81,7 @@
         <div class="card"><div class="metric-label">المجموعات</div><div class="metric" id="groupsCount">—</div></div>
         <div class="card"><div class="metric-label">حسابات المعلمين</div><div class="metric" id="teachersCount">—</div></div>
       </div>
-      <div class="panel"><div class="panel-head"><h2>مرحبًا بك في لوحة الإدارة</h2></div><p>هذه نسخة أولية متصلة بقاعدة البيانات لعرض البيانات. إنشاء حسابات المعلمين يتم عبر وظيفة الخادم الآمنة بعد اختبارها.</p></div>
+      <div class="panel"><div class="panel-head"><h2>مرحبًا بك في لوحة الإدارة</h2></div><p>النسخة الأولية متصلة بقاعدة البيانات لعرض البيانات. إنشاء حسابات المعلمين يتم عبر وظيفة الخادم الآمنة بعد اختبارها.</p></div>
     </section>
     <section id="studentsView" class="hidden">
       <div class="panel" id="addStudentPanel">
@@ -124,7 +124,17 @@
       </div>
     </section>
     <section id="groupsView" class="hidden">
-      <div class="panel"><div class="panel-head"><h2>المجموعات</h2></div>
+      <div class="panel" id="createGroupPanel">
+        <div class="panel-head"><h2>إضافة مجموعة جديدة</h2></div>
+        <form id="createGroupForm">
+          <div class="form-grid">
+            <div class="field"><label for="newGroupName">اسم المجموعة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
+          </div>
+          <div class="actions" style="margin-top:14px"><button class="btn primary" id="createGroupBtn" type="submit">إنشاء المجموعة</button></div>
+          <small class="sub">تُربط المجموعة تلقائيًا بحسابك، ولا يستطيع المعلم إدارة مجموعات المعلمين الآخرين.</small>
+        </form>
+      </div>
+      <div class="panel"><div class="panel-head"><h2>مجموعاتي</h2></div>
         <div class="table-wrap"><table><thead><tr><th>اسم الحلقة</th></tr></thead><tbody id="groupsRows"><tr><td colspan="1" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
@@ -139,7 +149,7 @@
         <p class="modal-hint">تعرض الملاحظات الحالات الخاصة المسجلة في بيانات الطلاب ضمن كل حلقة.</p>
       </div>
     </section>
-    <p class="footer">أكاديمية تزكى</p>
+    <p class="footer"> أكاديمية تزكى - تصميم مصطفى عبد العزيز </p>
   </main>
 </div>
 
@@ -194,6 +204,7 @@ $("searchStudents").addEventListener("click",loadStudents);
 $("studentGroupFilter").addEventListener("change",loadStudents);
 $("addStudentForm").addEventListener("submit", addStudent);
 $("createTeacherForm").addEventListener("submit", createTeacher);
+$("createGroupForm").addEventListener("submit", createGroup);
 async function requireProfile(){
   const {data:{user},error}=await db.auth.getUser();
   if(error||!user){location.replace("./index.html");return false;}
@@ -207,7 +218,7 @@ async function requireProfile(){
     $("createTeacherPanel").classList.add("hidden");
     // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
-    document.querySelector('[data-view="groups"]').classList.add("hidden");
+    // المعلم يستطيع فتح قسم المجموعات؛ وتحدد سياسات RLS المجموعات المتاحة له.
     document.querySelector('[data-view="statistics"]').classList.add("hidden");
     document.querySelector('[data-view="overview"]').classList.add("hidden");
   }
@@ -397,11 +408,38 @@ async function loadTeachers(){
   if(error){tbody.innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل المعلمين.</td></tr>';return;}
   tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.full_name||"—")}</td><td>${row.is_active?'<span class="tag">نشط</span>':'غير نشط'}</td></tr>`).join(""):'<tr><td colspan="2" class="empty">لا توجد حسابات معلمين.</td></tr>';
 }
+async function createGroup(event){
+  event.preventDefault();
+  if(!currentProfile || !["manager","teacher"].includes(currentProfile.role)){
+    message("لا تملك صلاحية إنشاء المجموعات.","error"); return;
+  }
+  const name=$("newGroupName").value.trim();
+  if(!name){message("يرجى إدخال اسم المجموعة.","error");$("newGroupName").focus();return;}
+  const button=$("createGroupBtn");
+  button.disabled=true;button.textContent="جارٍ الإنشاء...";
+  try{
+    const group={name,teacher_id:currentProfile.role==="teacher"?currentProfile.id:null};
+    const {error}=await db.from("groups").insert(group);
+    if(error) throw error;
+    $("createGroupForm").reset();
+    message("تم إنشاء المجموعة بنجاح.","info");
+    await loadGroups();
+    await loadGroupOptions();
+    if(currentProfile.role==="manager"){
+      const {count,error:countError}=await db.from("groups").select("*",{count:"exact",head:true});
+      if(!countError)$("groupsCount").textContent=count??0;
+    }
+  }catch(err){
+    message("تعذر إنشاء المجموعة. تحقق من الصلاحيات وأعد المحاولة. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");
+  }finally{
+    button.disabled=false;button.textContent="إنشاء المجموعة";
+  }
+}
 async function loadGroups(){
   const tbody=$("groupsRows");
-  const {data,error}=await db.from("groups").select("*").limit(100);
-  if(error){tbody.innerHTML='<tr><td class="empty">تعذر تحميل الحلقات.</td></tr>';return;}
-  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.name||row.group_name||"—")}</td></tr>`).join(""):'<tr><td class="empty">لا توجد حلقات.</td></tr>';
+  const {data,error}=await db.from("groups").select("id,name,teacher_id").order("name").limit(100);
+  if(error){tbody.innerHTML='<tr><td class="empty">تعذر تحميل الحلقات.</td></tr>';message("تعذر تحميل المجموعات: "+error.message,"error");return;}
+  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.name||"—")}</td></tr>`).join(""):'<tr><td class="empty">لا توجد مجموعات لهذا الحساب.</td></tr>';
 }
 
 async function loadStatistics(){
@@ -443,6 +481,7 @@ async function loadDashboard(){
     $("groupsCount").textContent=groupsCount??"—";
     $("teachersCount").textContent=teachersCount??"—";
   }else{
+    await loadGroups();
     showView("students");
   }
 }
