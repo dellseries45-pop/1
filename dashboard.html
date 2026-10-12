@@ -74,7 +74,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><select id="studentGroupFilter" aria-label="تصفية الطلاب حسب الحلقة"><option value="">كل الحلقات</option></select><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th></tr></thead><tbody id="studentsRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
@@ -200,7 +200,7 @@ async function addStudent(event){
   }
 }
 async function loadStudents(){
-  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr>';
+  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr>';
 let query = db.from("students")
     .select("id, full_name, group_id, created_by, notes, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
@@ -209,11 +209,11 @@ let query = db.from("students")
   if(selectedGroup) query=query.eq("group_id",selectedGroup);
   const {data,error}=await query;
   if(error){
-    tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
     message("تعذر تحميل الطلاب: "+error.message,"error");
     return;
   }
-  if(!data?.length){tbody.innerHTML='<tr><td colspan="3" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
 
   const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
   let groupNames={};
@@ -221,12 +221,36 @@ let query = db.from("students")
     const {data:groups,error:groupsError}=await db.from("groups").select("id,name").in("id",groupIds);
     if(!groupsError) groupNames=Object.fromEntries((groups||[]).map(group=>[group.id,group.name]));
   }
-  tbody.innerHTML=data.map(row=>`<tr>
-    <td>${escapeHtml(row.full_name||"—")}</td>
-    <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
-    <td>${escapeHtml(row.id||"—")}</td>
-  </tr>`).join("");
+  tbody.innerHTML=data.map(row=>{
+    const canEdit=currentProfile?.role==="manager" || row.created_by===currentProfile?.id;
+    return `<tr>
+      <td>${escapeHtml(row.full_name||"—")}</td>
+      <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
+      <td>${escapeHtml(row.id||"—")}</td>
+      <td>${canEdit ? `<button class="btn secondary edit-student-btn" data-id="${escapeHtml(row.id)}" data-name="${escapeHtml(row.full_name||"")}" type="button">تعديل</button>` : "—"}</td>
+    </tr>`;
+  }).join("");
 }
+$("studentsRows").addEventListener("click", async event=>{
+  const button=event.target.closest(".edit-student-btn");
+  if(!button) return;
+  const studentId=button.dataset.id;
+  const oldName=button.dataset.name||"";
+  const newName=window.prompt("أدخل الاسم الجديد للطالب:",oldName);
+  if(newName===null) return;
+  const cleanName=newName.trim();
+  if(!cleanName){message("اسم الطالب لا يمكن أن يكون فارغًا.","error");return;}
+  if(cleanName.length>150){message("اسم الطالب يجب ألا يتجاوز 150 حرفًا.","error");return;}
+  button.disabled=true;
+  const {error}=await db.from("students")
+    .update({full_name:cleanName})
+    .eq("id",studentId)
+    .eq("created_by",currentProfile.id);
+  button.disabled=false;
+  if(error){message("تعذر تعديل الطالب. قد لا تسمح صلاحيات الحساب بهذا التعديل. التفاصيل: "+error.message,"error");return;}
+  message("تم تعديل اسم الطالب بنجاح.","info");
+  await loadStudents();
+});
 async function createTeacher(event){
   event.preventDefault();
   if(!currentProfile || currentProfile.role!=="manager"){
