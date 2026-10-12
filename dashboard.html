@@ -33,25 +33,25 @@
     .edit-student-btn:hover{background:#d7f1f1;transform:translateY(-1px)}
     .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(12,31,49,.56);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
     .modal-backdrop.hidden{display:none!important}
-    .edit-modal{width:min(680px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e4ebf2;border-radius:20px;box-shadow:0 25px 80px #0b203744;animation:modalIn .18s ease-out}
+    .edit-modal{width:min(620px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e4ebf2;border-radius:20px;box-shadow:0 25px 80px #0b203744;animation:modalIn .18s ease-out}
     @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
     .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 20px 12px;border-bottom:1px solid #edf1f5}
-    .modal-head h2{margin:0;color:var(--navy);font-size:23px}.modal-head p{margin:7px 0 0;color:var(--muted);font-size:14px}
+    .modal-head h2{margin:0;color:var(--navy);font-size:21px}.modal-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
     .modal-close{border:1px solid var(--border);background:#fff;color:#64748b;border-radius:10px;width:38px;height:38px;font-size:23px;line-height:1}
     .modal-body{padding:14px 20px}.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.modal-grid .wide{grid-column:1/-1}
-    .modal-field{display:grid;gap:8px}.modal-field label{font-weight:800;font-size:14px;color:var(--navy)}
+    .modal-field{display:grid;gap:5px}.modal-field label{font-weight:800;font-size:14px;color:var(--navy)}
     .modal-field input,.modal-field select,.modal-field textarea{width:100%;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:#fff;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s}
     .modal-field textarea{min-height:58px;max-height:90px;resize:vertical;font:inherit}
     .modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px #078b911c}
-    .current-group{padding:11px 13px;background:#f5f9fc;border-radius:10px;color:#60758a;font-size:13px;display:flex;align-items:center;gap:8px}
+    .current-group{padding:7px 10px;background:#f5f9fc;border-radius:10px;color:#60758a;font-size:13px;display:flex;align-items:center;gap:8px}
     .modal-hint{font-size:12px;color:var(--muted);line-height:1.7}
-    .modal-status{display:none;margin-top:16px;padding:11px 13px;border-radius:10px;font-size:14px;line-height:1.6}
-    .modal-status.show{display:block}.modal-status.error{background:#fff0f1;color:#a52b39}.modal-status.info{background:#eaf7f7;color:#066b70}
-    .modal-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px 15px;border-top:1px solid #edf1f5}
+    .modal-status{display:block;visibility:hidden;min-height:0;height:0;overflow:hidden;margin-top:0;padding:0 10px;border-radius:9px;font-size:13px;line-height:1.35;transition:height .12s,margin .12s,padding .12s}
+    .modal-status.show{visibility:visible;height:auto;min-height:30px;max-height:54px;margin-top:7px;padding:6px 10px;overflow:auto;overflow-wrap:anywhere}.modal-status.error{background:#fff0f1;color:#a52b39}.modal-status.info{background:#eaf7f7;color:#066b70}
+    .modal-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 20px 11px;border-top:1px solid #edf1f5}
     .save-state{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}.spinner{width:16px;height:16px;border:2px solid #b8dedd;border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     body.modal-open{overflow:hidden}
-    @media(max-width:600px){.modal-backdrop{padding:8px;align-items:center}.edit-modal{max-height:calc(100dvh - 16px);border-radius:18px}.modal-head,.modal-body{padding:19px}.modal-foot{padding:16px 19px;align-items:flex-start;flex-direction:column-reverse}.modal-grid{grid-template-columns:1fr}.modal-grid .wide{grid-column:auto}.modal-foot .actions{width:100%}.modal-foot .btn{flex:1}}
+    @media(max-width:600px){.modal-backdrop{padding:8px;align-items:center}.edit-modal{max-height:calc(100dvh - 16px);border-radius:16px}.modal-head,.modal-body{padding:12px 14px}.modal-foot{padding:10px 14px;align-items:center;flex-direction:row}.modal-grid{grid-template-columns:1fr}.modal-grid .wide{grid-column:auto}.modal-foot .actions{width:100%}.modal-foot .btn{flex:1}}
 
     @media(max-width:850px){.shell{grid-template-columns:1fr}aside{padding:15px}.brand{padding-bottom:14px}.nav{display:flex;overflow:auto;margin-top:12px}.nav button{white-space:nowrap}.side-note{display:none}main{padding:17px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
   </style>
@@ -103,7 +103,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><select id="studentGroupFilter" aria-label="تصفية الطلاب حسب الحلقة"><option value="">كل الحلقات</option></select><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>المجموعة</th><th>المعرّف</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
@@ -120,12 +120,12 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>المعلمون</h2></div>
-        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الحالة</th><th>المعرّف</th></tr></thead><tbody id="teachersRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>اسم المعلم</th><th>الحالة</th></tr></thead><tbody id="teachersRows"><tr><td colspan="2" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="groupsView" class="hidden">
       <div class="panel"><div class="panel-head"><h2>المجموعات</h2></div>
-        <div class="table-wrap"><table><thead><tr><th>اسم المجموعة</th><th>المعرّف</th></tr></thead><tbody id="groupsRows"><tr><td colspan="2" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>اسم الحلقة</th></tr></thead><tbody id="groupsRows"><tr><td colspan="1" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="statisticsView" class="hidden">
@@ -153,7 +153,7 @@
       <div class="modal-body">
         <input type="hidden" id="editingStudentId">
         <div class="modal-grid">
-          <div class="modal-field wide"><label for="editStudentName">اسم الطالب *</label><input id="editStudentName" maxlength="150" required autocomplete="off" placeholder="اكتب اسم الطالب"></div>
+          <div class="modal-field"><label for="editStudentName">اسم الطالب *</label><input id="editStudentName" maxlength="150" required autocomplete="off" placeholder="اكتب اسم الطالب"></div>
           <div class="modal-field"><label for="editStudentGender">الجنس</label><select id="editStudentGender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
           <div class="modal-field">
             <label for="editStudentGroup">المجموعة</label>
@@ -161,7 +161,7 @@
             <select id="editStudentGroup"><option value="">بدون مجموعة</option></select>
             <small class="modal-hint" id="groupEditHint">اختر المجموعة المناسبة من المجموعات المتاحة لحسابك.</small>
           </div>
-          <div class="modal-field wide"><label for="editStudentNotes">الملاحظات</label><textarea id="editStudentNotes" maxlength="3000" placeholder="أضف ملاحظات عن الطالب (اختياري)"></textarea></div>
+          <div class="modal-field"><label for="editStudentNotes">الملاحظات</label><textarea id="editStudentNotes" maxlength="3000" placeholder="أضف ملاحظات عن الطالب (اختياري)"></textarea></div>
         </div>
         <div id="studentEditStatus" class="modal-status" role="status" aria-live="polite"></div>
       </div>
@@ -303,8 +303,8 @@ let query = db.from("students")
     const canEdit=currentProfile?.role==="manager" || (currentProfile?.role==="teacher" && (isOwnUnassignedStudent || isAssignedGroupStudent));
     return `<tr>
       <td>${escapeHtml(row.full_name||"—")}</td>
+      <td>${row.gender==="male"?'<span class="tag">ذكر</span>':row.gender==="female"?'<span class="group-pill">أنثى</span>':'<span class="group-pill unassigned">غير محدد</span>'}</td>
       <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</span></td>
-      <td>${escapeHtml(row.id||"—")}</td>
       <td>${canEdit ? `<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button>` : "—"}</td>
     </tr>`;
   }).join("");
@@ -394,14 +394,14 @@ async function createTeacher(event){
 async function loadTeachers(){
   const tbody=$("teachersRows");
   const {data,error}=await db.from("profiles").select("id,full_name,is_active,role").eq("role","teacher").order("full_name").limit(100);
-  if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل المعلمين.</td></tr>';return;}
-  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.full_name||"—")}</td><td>${row.is_active?'<span class="tag">نشط</span>':'غير نشط'}</td><td>${escapeHtml(row.id)}</td></tr>`).join(""):'<tr><td colspan="3" class="empty">لا توجد حسابات معلمين.</td></tr>';
+  if(error){tbody.innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل المعلمين.</td></tr>';return;}
+  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.full_name||"—")}</td><td>${row.is_active?'<span class="tag">نشط</span>':'غير نشط'}</td></tr>`).join(""):'<tr><td colspan="2" class="empty">لا توجد حسابات معلمين.</td></tr>';
 }
 async function loadGroups(){
   const tbody=$("groupsRows");
   const {data,error}=await db.from("groups").select("*").limit(100);
-  if(error){tbody.innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل المجموعات.</td></tr>';return;}
-  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.name||row.group_name||"—")}</td><td>${escapeHtml(row.id||"—")}</td></tr>`).join(""):'<tr><td colspan="2" class="empty">لا توجد مجموعات.</td></tr>';
+  if(error){tbody.innerHTML='<tr><td class="empty">تعذر تحميل الحلقات.</td></tr>';return;}
+  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.name||row.group_name||"—")}</td></tr>`).join(""):'<tr><td class="empty">لا توجد حلقات.</td></tr>';
 }
 
 async function loadStatistics(){
