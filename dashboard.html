@@ -26,7 +26,33 @@
     .empty{text-align:center;color:var(--muted);padding:28px}.tag{display:inline-block;padding:4px 9px;border-radius:20px;background:#e8f7f3;color:#08785f;font-size:12px}
     .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.field{display:grid;gap:7px}.field label{font-size:14px;font-weight:700}.field input,.field select{width:100%}
     .hidden{display:none!important}.footer{color:var(--muted);font-size:12px;text-align:center;padding:10px}
-    @media(max-width:850px){.shell{grid-template-columns:1fr}aside{padding:15px}.brand{padding-bottom:14px}.nav{display:flex;overflow:auto;margin-top:12px}.nav button{white-space:nowrap}.side-note{display:none}main{padding:17px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+
+    .group-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#e8f7f7;color:#08777b;font-weight:700;font-size:12px;white-space:nowrap}
+    .group-pill.unassigned{background:#f1f4f8;color:#64748b}
+    .edit-student-btn{display:inline-flex;align-items:center;gap:7px;background:#e8f7f7;color:#08777b;border:1px solid #c6eeee;padding:8px 13px;border-radius:9px;font-weight:800}
+    .edit-student-btn:hover{background:#d7f1f1;transform:translateY(-1px)}
+    .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(12,31,49,.56);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal-backdrop.hidden{display:none!important}
+    .edit-modal{width:min(760px,100%);max-height:min(90vh,900px);overflow:auto;background:#fff;border:1px solid #e4ebf2;border-radius:20px;box-shadow:0 25px 80px #0b203744;animation:modalIn .18s ease-out}
+    @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:24px 26px 19px;border-bottom:1px solid #edf1f5}
+    .modal-head h2{margin:0;color:var(--navy);font-size:23px}.modal-head p{margin:7px 0 0;color:var(--muted);font-size:14px}
+    .modal-close{border:1px solid var(--border);background:#fff;color:#64748b;border-radius:10px;width:38px;height:38px;font-size:23px;line-height:1}
+    .modal-body{padding:24px 26px}.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.modal-grid .wide{grid-column:1/-1}
+    .modal-field{display:grid;gap:8px}.modal-field label{font-weight:800;font-size:14px;color:var(--navy)}
+    .modal-field input,.modal-field select,.modal-field textarea{width:100%;border:1px solid var(--border);border-radius:11px;padding:13px 14px;background:#fff;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s}
+    .modal-field textarea{min-height:112px;resize:vertical;font:inherit}
+    .modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px #078b911c}
+    .current-group{padding:11px 13px;background:#f5f9fc;border-radius:10px;color:#60758a;font-size:13px;display:flex;align-items:center;gap:8px}
+    .modal-hint{font-size:12px;color:var(--muted);line-height:1.7}
+    .modal-status{display:none;margin-top:16px;padding:11px 13px;border-radius:10px;font-size:14px;line-height:1.6}
+    .modal-status.show{display:block}.modal-status.error{background:#fff0f1;color:#a52b39}.modal-status.info{background:#eaf7f7;color:#066b70}
+    .modal-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 26px 23px;border-top:1px solid #edf1f5}
+    .save-state{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}.spinner{width:16px;height:16px;border:2px solid #b8dedd;border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    body.modal-open{overflow:hidden}
+    @media(max-width:600px){.modal-backdrop{padding:10px;align-items:flex-end}.edit-modal{max-height:94vh;border-radius:18px}.modal-head,.modal-body{padding:19px}.modal-foot{padding:16px 19px;align-items:flex-start;flex-direction:column-reverse}.modal-grid{grid-template-columns:1fr}.modal-grid .wide{grid-column:auto}.modal-foot .actions{width:100%}.modal-foot .btn{flex:1}}
+\n    @media(max-width:850px){.shell{grid-template-columns:1fr}aside{padding:15px}.brand{padding-bottom:14px}.nav{display:flex;overflow:auto;margin-top:12px}.nav button{white-space:nowrap}.side-note{display:none}main{padding:17px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -102,7 +128,36 @@
     <p class="footer">أكاديمية تزكى — لوحة تحكم أولية</p>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<div id="studentEditBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" aria-describedby="editModalDescription">
+    <header class="modal-head">
+      <div><h2 id="editModalTitle">تعديل بيانات الطالب</h2><p id="editModalDescription">حدّث بيانات الطالب ثم احفظ التغييرات.</p></div>
+      <button type="button" class="modal-close" id="closeStudentModal" aria-label="إغلاق نافذة التعديل">×</button>
+    </header>
+    <form id="studentEditForm">
+      <div class="modal-body">
+        <input type="hidden" id="editingStudentId">
+        <div class="modal-grid">
+          <div class="modal-field wide"><label for="editStudentName">اسم الطالب *</label><input id="editStudentName" maxlength="150" required autocomplete="off" placeholder="اكتب اسم الطالب"></div>
+          <div class="modal-field wide">
+            <label for="editStudentGroup">المجموعة</label>
+            <div class="current-group"><span>المجموعة الحالية:</span><strong id="currentStudentGroup">—</strong></div>
+            <select id="editStudentGroup"><option value="">بدون مجموعة</option></select>
+            <small class="modal-hint" id="groupEditHint">اختر المجموعة المناسبة من المجموعات المتاحة لحسابك.</small>
+          </div>
+          <div class="modal-field wide"><label for="editStudentNotes">الملاحظات</label><textarea id="editStudentNotes" maxlength="3000" placeholder="أضف ملاحظات عن الطالب (اختياري)"></textarea></div>
+        </div>
+        <div id="studentEditStatus" class="modal-status" role="status" aria-live="polite"></div>
+      </div>
+      <footer class="modal-foot">
+        <div class="save-state" id="studentSaveState">يمكنك مراجعة البيانات قبل الحفظ.</div>
+        <div class="actions"><button type="button" class="btn secondary" id="cancelStudentModal">إلغاء</button><button type="submit" class="btn primary" id="saveStudentChanges">حفظ التعديلات</button></div>
+      </footer>
+    </form>
+  </section>
+</div>
+\n<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://zncfwhytbcsacxyxyqls.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HiT50exMSJUb0jd8OW4O6g_U8WTL9vZ";
@@ -222,37 +277,60 @@ let query = db.from("students")
     if(!groupsError) groupNames=Object.fromEntries((groups||[]).map(group=>[group.id,group.name]));
     if(!groupsError) window.__studentGroupOwners=Object.fromEntries((groups||[]).map(group=>[group.id,group.teacher_id]));
   }
+  window.__studentRows=Object.fromEntries(data.map(row=>[row.id,row]));
+  window.__studentGroupNames=groupNames;
   tbody.innerHTML=data.map(row=>{
     const isOwnUnassignedStudent=!row.group_id && row.created_by===currentProfile?.id;
     const isAssignedGroupStudent=!!row.group_id && window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
     const canEdit=currentProfile?.role==="manager" || (currentProfile?.role==="teacher" && (isOwnUnassignedStudent || isAssignedGroupStudent));
     return `<tr>
       <td>${escapeHtml(row.full_name||"—")}</td>
-      <td>${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</td>
+      <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</span></td>
       <td>${escapeHtml(row.id||"—")}</td>
-      <td>${canEdit ? `<button class="btn secondary edit-student-btn" data-id="${escapeHtml(row.id)}" data-name="${escapeHtml(row.full_name||"")}" type="button">تعديل</button>` : "—"}</td>
+      <td>${canEdit ? `<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button>` : "—"}</td>
     </tr>`;
   }).join("");
 }
-$("studentsRows").addEventListener("click", async event=>{
-  const button=event.target.closest(".edit-student-btn");
-  if(!button) return;
-  const studentId=button.dataset.id;
-  const oldName=button.dataset.name||"";
-  const newName=window.prompt("أدخل الاسم الجديد للطالب:",oldName);
-  if(newName===null) return;
-  const cleanName=newName.trim();
-  if(!cleanName){message("اسم الطالب لا يمكن أن يكون فارغًا.","error");return;}
-  if(cleanName.length>150){message("اسم الطالب يجب ألا يتجاوز 150 حرفًا.","error");return;}
-  button.disabled=true;
-  const {error}=await db.from("students")
-    .update({full_name:cleanName})
-    .eq("id",studentId);
-  button.disabled=false;
-  if(error){message("تعذر تعديل الطالب. قد لا تسمح صلاحيات الحساب بهذا التعديل. التفاصيل: "+error.message,"error");return;}
-  message("تم تعديل اسم الطالب بنجاح.","info");
-  await loadStudents();
+let editingStudentOriginal=null,studentEditSaving=false;
+function setEditStatus(text,type="info"){const el=$("studentEditStatus");el.textContent=text;el.className="modal-status show "+type;}
+function setSaveState(text,loading=false){$("studentSaveState").innerHTML=loading?'<span class="spinner" aria-hidden="true"></span><span>'+escapeHtml(text)+'</span>':escapeHtml(text);}
+function editFormChanged(){return !!editingStudentOriginal&&($("editStudentName").value.trim()!==editingStudentOriginal.full_name||($("editStudentGroup").value||"")!==(editingStudentOriginal.group_id||"")||$("editStudentNotes").value.trim()!==(editingStudentOriginal.notes||""));}
+function closeStudentEdit(force=false){if(studentEditSaving)return;if(!force&&editFormChanged()&&!window.confirm("لديك تغييرات لم تُحفظ. هل تريد إغلاق النافذة وفقدان هذه التغييرات؟"))return;$("studentEditBackdrop").classList.add("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");editingStudentOriginal=null;}
+function openStudentEdit(row,groupNames){
+ const ownUnassigned=!row.group_id&&row.created_by===currentProfile.id,assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile.id;
+ if(currentProfile.role!=="manager"&&!(ownUnassigned||assigned)){message("لا تملك صلاحية تعديل بيانات هذا الطالب.","error");return;}
+ editingStudentOriginal={id:row.id,full_name:row.full_name||"",group_id:row.group_id||"",notes:row.notes||""};
+ $("editingStudentId").value=row.id;$("editStudentName").value=row.full_name||"";$("editStudentNotes").value=row.notes||"";
+ $("currentStudentGroup").textContent=row.group_id?(groupNames[row.group_id]||"مجموعة غير متاحة"):"بدون مجموعة";
+ const sel=$("editStudentGroup");sel.innerHTML='<option value="">بدون مجموعة</option>';
+ [...$("newStudentGroup").options].filter(o=>o.value).forEach(o=>{const op=document.createElement("option");op.value=o.value;op.textContent=o.textContent;sel.appendChild(op);});
+ if(row.group_id&&![...sel.options].some(o=>o.value===row.group_id)){const op=document.createElement("option");op.value=row.group_id;op.textContent=groupNames[row.group_id]||"المجموعة الحالية";sel.appendChild(op);}
+ sel.value=row.group_id||"";$("groupEditHint").textContent=currentProfile.role==="manager"?"يمكنك نقل الطالب إلى أي مجموعة أو إبقاؤه دون مجموعة.":"يمكنك نقل الطالب بين الحلقات المسندة إليك فقط؛ وتتحقق قاعدة البيانات من الصلاحيات عند الحفظ.";
+ $("studentEditStatus").className="modal-status";$("studentEditStatus").textContent="";setSaveState("يمكنك مراجعة البيانات قبل الحفظ.");
+ $("studentEditBackdrop").classList.remove("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","false");document.body.classList.add("modal-open");setTimeout(()=>$("editStudentName").focus(),30);
+}
+$("studentsRows").addEventListener("click",event=>{const b=event.target.closest(".edit-student-btn");if(!b)return;const row=window.__studentRows?.[b.dataset.id];if(row)openStudentEdit(row,window.__studentGroupNames||{});});
+$("closeStudentModal").addEventListener("click",()=>closeStudentEdit());
+$("cancelStudentModal").addEventListener("click",()=>closeStudentEdit());
+$("studentEditBackdrop").addEventListener("click",e=>{if(e.target===$("studentEditBackdrop"))closeStudentEdit();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("studentEditBackdrop").classList.contains("hidden"))closeStudentEdit();});
+$("studentEditForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(studentEditSaving||!editingStudentOriginal)return;
+ const name=$("editStudentName").value.trim();if(!name){setEditStatus("يرجى إدخال اسم الطالب.","error");$("editStudentName").focus();return;}if(name.length>150){setEditStatus("اسم الطالب يجب ألا يتجاوز 150 حرفًا.","error");return;}
+ const group=$("editStudentGroup").value||null;
+ if(currentProfile.role==="teacher"&&group&&![...$("newStudentGroup").options].some(o=>o.value===group)){setEditStatus("لا يمكنك نقل الطالب إلى حلقة غير مسندة إليك.","error");return;}
+ studentEditSaving=true;["saveStudentChanges","cancelStudentModal","closeStudentModal","editStudentName","editStudentGroup","editStudentNotes"].forEach(id=>$(id).disabled=true);
+ setSaveState("جارٍ حفظ التعديلات...",true);setEditStatus("جارٍ حفظ بيانات الطالب...");
+ try{
+  const updates={full_name:name,group_id:group,notes:$("editStudentNotes").value.trim()||null};
+  const {data,error}=await db.from("students").update(updates).eq("id",editingStudentOriginal.id).select("id");
+  if(error)throw error;if(!data?.length)throw new Error("لم يتم تحديث أي سجل؛ تحقق من صلاحيات الحساب.");
+  setEditStatus("تم حفظ تعديلات الطالب بنجاح.","info");setSaveState("تم الحفظ بنجاح.");editingStudentOriginal={...editingStudentOriginal,...updates,notes:updates.notes||""};
+  await loadStudents();setTimeout(()=>closeStudentEdit(true),700);
+ }catch(err){setEditStatus("تعذر حفظ التعديلات. تحقق من صلاحياتك والمجموعة المختارة. "+(err?.message||""),"error");setSaveState("لم تُحفظ التغييرات.");}
+ finally{studentEditSaving=false;["saveStudentChanges","cancelStudentModal","closeStudentModal","editStudentName","editStudentGroup","editStudentNotes"].forEach(id=>$(id).disabled=false);}
 });
+
 async function createTeacher(event){
   event.preventDefault();
   if(!currentProfile || currentProfile.role!=="manager"){
