@@ -155,7 +155,7 @@
       <button class="active" data-view="overview">نظرة عامة</button>
       <button data-view="students">الطلاب</button>
       <button data-view="teachers">المعلمون</button>
-      <button data-view="groups">المجموعات</button>
+      <button data-view="groups">الحلقات</button>
       <button data-view="attendanceReports" id="attendanceReportsNav">تقارير الحضور</button>
       <button data-view="statistics" id="statisticsNav">الإحصائيات</button>
     </nav>
@@ -170,7 +170,7 @@
     <section id="overviewView">
       <div class="cards">
         <div class="card"><div class="metric-label">إجمالي الطلاب</div><div class="metric" id="studentsCount">—</div></div>
-        <div class="card"><div class="metric-label">المجموعات</div><div class="metric" id="groupsCount">—</div></div>
+        <div class="card"><div class="metric-label">الحلقات</div><div class="metric" id="groupsCount">—</div></div>
         <div class="card"><div class="metric-label">حسابات المعلمين</div><div class="metric" id="teachersCount">—</div></div>
       </div>
       <div class="panel"><div class="panel-head"><h2>مرحبًا بك في لوحة الإدارة</h2></div><p>النسخة الأولية متصلة بقاعدة البيانات لعرض البيانات. إنشاء حسابات المعلمين يتم عبر وظيفة الخادم الآمنة بعد اختبارها.</p></div>
@@ -183,11 +183,11 @@
             <div class="field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
             <div class="field"><label for="newStudentGender">الجنس</label><select id="newStudentGender" name="gender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
             <div class="field">
-              <label for="newStudentGroup">المجموعة (اختياري)</label>
+              <label for="newStudentGroup">الحلقة (اختياري)</label>
               <select id="newStudentGroup" name="group_id">
-                <option value="">بدون مجموعة</option>
+                <option value="">بدون حلقة</option>
               </select>
-              <small>اختر مجموعة من القائمة، أو اترك الخيار «بدون مجموعة» إذا لم تكن هناك مجموعة.</small>
+              <small>اختر مجموعة من القائمة، أو اترك الخيار «بدون حلقة» إذا لم تكن هناك مجموعة.</small>
             </div>
             <div class="field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
           </div>
@@ -217,13 +217,13 @@
     </section>
     <section id="groupsView" class="hidden">
       <div class="panel" id="createGroupPanel">
-        <div class="panel-head"><h2>إضافة مجموعة جديدة</h2></div>
+        <div class="panel-head"><h2>إضافة حلقة جديدة</h2></div>
         <form id="createGroupForm">
           <div class="form-grid">
-            <div class="field"><label for="newGroupName">اسم المجموعة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
+            <div class="field"><label for="newGroupName">اسم الحلقة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
           </div>
-          <div class="actions" style="margin-top:14px"><button class="btn primary" id="createGroupBtn" type="submit">إنشاء المجموعة</button></div>
-          <small class="sub">تُربط المجموعة تلقائيًا بحسابك، ولا يستطيع المعلم إدارة مجموعات المعلمين الآخرين.</small>
+          <div class="actions" style="margin-top:14px"><button class="btn primary" id="createGroupBtn" type="submit">إنشاء الحلقة</button></div>
+          <small class="sub">تُربط المجموعة تلقائيًا بحسابك، ولا يستطيع المعلم إدارة حلقات المعلمين الآخرين.</small>
         </form>
       </div>
       <div class="panel" id="groupsListPanel"><div class="panel-head"><div><h2>الحلقات</h2><p class="sub">اختر الحلقة لفتح صفحة تفاصيلها وقائمة طلابها.</p></div><span class="group-count" id="visibleGroupsCount">— حلقة</span></div>
@@ -300,10 +300,10 @@
           <div class="modal-field"><label for="editStudentName">اسم الطالب *</label><input id="editStudentName" maxlength="150" required autocomplete="off" placeholder="اكتب اسم الطالب"></div>
           <div class="modal-field"><label for="editStudentGender">الجنس</label><select id="editStudentGender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
           <div class="modal-field">
-            <label for="editStudentGroup">المجموعة</label>
-            <div class="current-group"><span>المجموعة الحالية:</span><strong id="currentStudentGroup">—</strong></div>
-            <select id="editStudentGroup"><option value="">بدون مجموعة</option></select>
-            <small class="modal-hint" id="groupEditHint">اختر المجموعة المناسبة من المجموعات المتاحة لحسابك.</small>
+            <label for="editStudentGroup">الحلقة</label>
+            <div class="current-group"><span>الحلقة الحالية:</span><strong id="currentStudentGroup">—</strong></div>
+            <select id="editStudentGroup"><option value="">بدون حلقة</option></select>
+            <small class="modal-hint" id="groupEditHint">اختر الحلقة المناسبة من الحلقات المتاحة لحسابك.</small>
           </div>
           <div class="modal-field"><label for="editStudentNotes">الملاحظات</label><textarea id="editStudentNotes" maxlength="3000" placeholder="أضف ملاحظات عن الطالب (اختياري)"></textarea></div>
         </div>
@@ -349,7 +349,7 @@ function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, ch=>({
 function showView(view){
   ["overview","students","teachers","groups","attendanceReports","statistics"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
   document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
-  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"المجموعات",attendanceReports:"تقارير الحضور",statistics:"الإحصائيات"})[view];
+  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"الحلقات",attendanceReports:"تقارير الحضور",statistics:"الإحصائيات"})[view];
   if(view==="attendanceReports") loadAttendanceReportOptions();
 }
 document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
@@ -374,7 +374,7 @@ async function requireProfile(){
     $("createTeacherPanel").classList.add("hidden");
     // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
-    // المعلم يستطيع فتح قسم المجموعات؛ وتحدد سياسات RLS المجموعات المتاحة له.
+    // المعلم يستطيع فتح قسم الحلقات؛ وتحدد سياسات RLS المجموعات المتاحة له.
     document.querySelector('[data-view="statistics"]').classList.add("hidden");
     document.querySelector('[data-view="overview"]').classList.add("hidden");
   }
@@ -384,16 +384,16 @@ async function requireProfile(){
 async function loadGroupOptions(){
   const select=$("newStudentGroup");
   const filter=$("studentGroupFilter");
-  select.innerHTML='<option value="">بدون مجموعة</option>';
+  select.innerHTML='<option value="">بدون حلقة</option>';
   filter.innerHTML='<option value="">كل الحلقات</option>';
   const {data,error}=await db.from("groups").select("id,name").order("name").limit(200);
   if(error){
-    message("تعذر تحميل قائمة المجموعات. يمكنك إضافة الطالب بدون مجموعة. التفاصيل: "+error.message,"error");
+    message("تعذر تحميل قائمة الحلقات. يمكنك إضافة الطالب بدون حلقة. التفاصيل: "+error.message,"error");
     return;
   }
   for(const group of (data||[])){
     if(!group.id) continue;
-    const label=group.name||group.group_name||group.title||("مجموعة "+group.id);
+    const label=group.name||group.group_name||group.title||("حلقة "+group.id);
     const addOption=document.createElement("option");
     addOption.value=group.id;
     addOption.textContent=label;
@@ -523,7 +523,7 @@ let query = db.from("students")
     return `<tr>
       <td>${escapeHtml(row.full_name||"—")}</td>
       <td>${row.gender==="male"?'<span class="tag">ذكر</span>':row.gender==="female"?'<span class="group-pill">أنثى</span>':'<span class="group-pill unassigned">غير محدد</span>'}</td>
-      <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</span></td>
+      <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "حلقة غير متاحة") : "بدون حلقة")}</span></td>
       <td class="student-notes">${escapeHtml(row.notes||"—")}</td>
       <td>${editAction}${deleteAction||(!canEdit?"—":"")}</td>
     </tr>`;
@@ -539,11 +539,11 @@ function openStudentEdit(row,groupNames){
  if(currentProfile.role!=="manager"&&!(row.created_by===currentProfile.id&&(ownUnassigned||assigned))){message("يمكنك تعديل الطلاب الذين أدخلت بياناتهم فقط، ضمن نطاق حلقاتك.","error");return;}
  editingStudentOriginal={id:row.id,full_name:row.full_name||"",group_id:row.group_id||"",notes:row.notes||"",gender:row.gender||""};
  $("editingStudentId").value=row.id;$("editStudentName").value=row.full_name||"";$("editStudentNotes").value=row.notes||"";$("editStudentGender").value=row.gender||"";
- $("currentStudentGroup").textContent=row.group_id?(groupNames[row.group_id]||"مجموعة غير متاحة"):"بدون مجموعة";
- const sel=$("editStudentGroup");sel.innerHTML='<option value="">بدون مجموعة</option>';
+ $("currentStudentGroup").textContent=row.group_id?(groupNames[row.group_id]||"حلقة غير متاحة"):"بدون حلقة";
+ const sel=$("editStudentGroup");sel.innerHTML='<option value="">بدون حلقة</option>';
  [...$("newStudentGroup").options].filter(o=>o.value).forEach(o=>{const op=document.createElement("option");op.value=o.value;op.textContent=o.textContent;sel.appendChild(op);});
- if(row.group_id&&![...sel.options].some(o=>o.value===row.group_id)){const op=document.createElement("option");op.value=row.group_id;op.textContent=groupNames[row.group_id]||"المجموعة الحالية";sel.appendChild(op);}
- sel.value=row.group_id||"";$("groupEditHint").textContent=currentProfile.role==="manager"?"يمكنك نقل الطالب إلى أي مجموعة أو إبقاؤه دون مجموعة.":"يمكنك نقل الطالب بين الحلقات المسندة إليك فقط؛ وتتحقق قاعدة البيانات من الصلاحيات عند الحفظ.";
+ if(row.group_id&&![...sel.options].some(o=>o.value===row.group_id)){const op=document.createElement("option");op.value=row.group_id;op.textContent=groupNames[row.group_id]||"الحلقة الحالية";sel.appendChild(op);}
+ sel.value=row.group_id||"";$("groupEditHint").textContent=currentProfile.role==="manager"?"يمكنك نقل الطالب إلى أي حلقة أو إبقاؤه دون حلقة.":"يمكنك نقل الطالب بين الحلقات المسندة إليك فقط؛ وتتحقق قاعدة البيانات من الصلاحيات عند الحفظ.";
  $("studentEditStatus").className="modal-status";$("studentEditStatus").textContent="";setSaveState("يمكنك مراجعة البيانات قبل الحفظ.");
  $("studentEditBackdrop").classList.remove("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","false");document.body.classList.add("modal-open");setTimeout(()=>$("editStudentName").focus(),30);
 }
@@ -653,10 +653,10 @@ async function loadTeachers(){
 async function createGroup(event){
   event.preventDefault();
   if(!currentProfile || !["manager","teacher"].includes(currentProfile.role)){
-    message("لا تملك صلاحية إنشاء المجموعات.","error"); return;
+    message("لا تملك صلاحية إنشاء الحلقات.","error"); return;
   }
   const name=$("newGroupName").value.trim();
-  if(!name){message("يرجى إدخال اسم المجموعة.","error");$("newGroupName").focus();return;}
+  if(!name){message("يرجى إدخال اسم الحلقة.","error");$("newGroupName").focus();return;}
   const button=$("createGroupBtn");
   button.disabled=true;button.textContent="جارٍ الإنشاء...";
   try{
@@ -664,7 +664,7 @@ async function createGroup(event){
     const {error}=await db.from("groups").insert(group);
     if(error) throw error;
     $("createGroupForm").reset();
-    message("تم إنشاء المجموعة بنجاح.","info");
+    message("تم إنشاء الحلقة بنجاح.","info");
     await loadGroups();
     await loadGroupOptions();
     if(currentProfile.role==="manager"){
@@ -672,16 +672,16 @@ async function createGroup(event){
       if(!countError)$("groupsCount").textContent=count??0;
     }
   }catch(err){
-    message("تعذر إنشاء المجموعة. تحقق من الصلاحيات وأعد المحاولة. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");
+    message("تعذر إنشاء الحلقة. تحقق من الصلاحيات وأعد المحاولة. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");
   }finally{
-    button.disabled=false;button.textContent="إنشاء المجموعة";
+    button.disabled=false;button.textContent="إنشاء الحلقة";
   }
 }
 async function loadGroups(){
   const container=$("groupsRows");
   container.innerHTML='<div class="empty">جارٍ تحميل الحلقات...</div>';
   const {data,error}=await db.from("groups").select("id,name,teacher_id").order("name").limit(200);
-  if(error){container.innerHTML='<div class="empty">تعذر تحميل الحلقات.</div>';message("تعذر تحميل المجموعات: "+error.message,"error");return;}
+  if(error){container.innerHTML='<div class="empty">تعذر تحميل الحلقات.</div>';message("تعذر تحميل الحلقات: "+error.message,"error");return;}
   const groups=data||[];
   const countLabel=$("visibleGroupsCount");if(countLabel)countLabel.textContent=`${groups.length} ${groups.length===1?"حلقة":"حلقات"}`;
   if(!groups.length){container.innerHTML='<div class="empty">لا توجد حلقات متاحة لهذا الحساب حتى الآن.</div>';return;}
@@ -707,7 +707,7 @@ function showGroupsList(){
   groupDetailView.classList.add("hidden");
   groupsListPanel.classList.remove("hidden");
   if(currentProfile?.role==="manager") createGroupPanel.classList.remove("hidden");
-  const title=$("pageTitle");if(title)title.textContent="المجموعات";
+  const title=$("pageTitle");if(title)title.textContent="الحلقات";
 }
 async function openGroupDetail(groupId, groupName){
   activeGroupId=groupId;
