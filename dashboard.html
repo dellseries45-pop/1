@@ -80,6 +80,40 @@
     .confirm-danger{background:linear-gradient(135deg,#d94b5c,#b92f45);box-shadow:0 7px 18px #c9435025}.confirm-cancel{transition:background .15s}.confirm-cancel:hover{background:#f0f5f8}
     input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal)!important;box-shadow:0 0 0 3px #078f911c}
     @media(max-width:850px){aside{background:linear-gradient(110deg,#102b46,#075c68)}main{padding:18px}.card,.panel{border-radius:15px}}
+
+
+    /* Responsive, content-aware table and form sizing refinement */
+    .table-wrap{border:1px solid #e4ebf2;border-radius:14px;background:#fff;scrollbar-width:thin;scrollbar-color:#c8d7e3 transparent}
+    .table-wrap table{margin:0}
+    table{min-width:650px;border-spacing:0}
+    th{font-size:13px;letter-spacing:.05px;padding:13px 14px;white-space:nowrap;border-bottom:1px solid #e5edf4}
+    td{padding:12px 14px;line-height:1.6;color:#304a61}
+    tbody tr:last-child td{border-bottom:0}
+    .student-table{table-layout:fixed;min-width:850px}
+    .student-table .col-student-name{width:21%}
+    .student-table .col-student-gender{width:9%}
+    .student-table .col-student-group{width:19%}
+    .student-table .col-student-notes{width:29%}
+    .student-table .col-student-actions{width:22%}
+    .student-table th:nth-child(2),.student-table td:nth-child(2){text-align:center}
+    .student-table td:nth-child(2){white-space:nowrap}
+    .student-table td:nth-child(1){font-weight:700;color:var(--navy);overflow-wrap:anywhere}
+    .student-table td:nth-child(3){overflow-wrap:anywhere}
+    .student-table .student-notes{min-width:0;max-width:none;white-space:normal;line-height:1.7;overflow-wrap:anywhere;color:#60758a}
+    .student-table td:last-child{white-space:nowrap}
+    .student-table .edit-student-btn,.student-table .delete-student-btn{padding:7px 10px;font-size:12px;border-radius:8px}
+    .student-table .delete-student-btn{margin-inline-start:4px}
+    .student-table .group-pill,.student-table .tag{padding:4px 8px;font-size:11px}
+    .form-grid{align-items:start;gap:15px}
+    .field input,.field select,.field textarea,.modal-field input,.modal-field select,.modal-field textarea{min-height:42px;border-radius:11px;border-color:#dce6ef;transition:border-color .16s,box-shadow .16s,background .16s}
+    .field textarea,.modal-field textarea{min-height:76px;line-height:1.65}
+    .field label,.modal-field label{color:#29465f}
+    .field small{color:var(--muted);line-height:1.6}
+    .tools input,.tools select{min-height:40px;border-radius:10px}
+    .panel-head .tools{align-items:center}
+    .empty{padding:30px 16px!important}
+    @media(max-width:850px){.student-table{min-width:790px}.student-table .col-student-name{width:20%}.student-table .col-student-gender{width:10%}.student-table .col-student-group{width:18%}.student-table .col-student-notes{width:28%}.student-table .col-student-actions{width:24%}}
+    @media(max-width:600px){.panel{padding:14px}.panel-head{align-items:stretch}.panel-head .tools{display:grid;grid-template-columns:1fr 1fr;width:100%}.panel-head .tools input{grid-column:1/-1;width:100%}.panel-head .tools select,.panel-head .tools button{width:100%;min-width:0}.form-grid{gap:12px}.student-table{min-width:760px}th,td{padding:11px 10px}}
   </style>
 </head>
 <body>
@@ -129,7 +163,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><select id="studentGroupFilter" aria-label="تصفية الطلاب حسب الحلقة"><option value="">كل الحلقات</option></select><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap student-table-wrap"><table class="student-table"><colgroup><col class="col-student-name"><col class="col-student-gender"><col class="col-student-group"><col class="col-student-notes"><col class="col-student-actions"></colgroup><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
