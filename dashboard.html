@@ -17,12 +17,12 @@
     main{padding:28px;min-width:0}.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:25px}
     h1{font-size:27px;margin:0;color:var(--navy)}.sub{color:var(--muted);margin-top:6px}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .btn{border:0;border-radius:9px;padding:11px 15px;font-weight:700}.primary{background:var(--teal);color:white}.secondary{background:white;border:1px solid var(--border);color:var(--navy)}.danger{background:#fff0f1;color:var(--danger)}
-    .notice{display:none;padding:12px 15px;border-radius:10px;margin:0 0 18px;line-height:1.7}.notice.show{display:block}.notice.error{background:#fff0f1;color:#a52b39}.notice.info{background:#eaf7f7;color:#066b70}
+    .notice{display:none;position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:2000;width:min(560px,calc(100% - 28px));padding:14px 18px;border-radius:14px;margin:0;line-height:1.7;font-weight:700;box-shadow:0 12px 35px #10283f22;border:1px solid transparent;text-align:center}.notice.show{display:block;animation:noticeIn .18s ease-out}.notice.error{background:#fff0f1;color:#a52b39;border-color:#f4cbd0}.notice.info{background:#eaf7f7;color:#066b70;border-color:#c6eeee}@keyframes noticeIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px}.card{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 4px 15px #183a5508}
     .metric-label{color:var(--muted);font-size:14px}.metric{font-size:30px;font-weight:800;margin-top:8px;color:var(--navy)}
     .panel{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}.panel h2{font-size:19px;margin:0}
     .tools{display:flex;gap:10px;flex-wrap:wrap}.tools input,.tools select,.field input,.field select,.field textarea{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:white;min-width:0}.field textarea{font:inherit;resize:vertical;min-height:85px}
-    .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:right;padding:13px 12px;border-bottom:1px solid #edf0f4;font-size:14px}th{color:var(--muted);font-weight:700;background:#fafbfd}
+    .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:right;padding:13px 12px;border-bottom:1px solid #edf0f4;font-size:14px}th{color:var(--muted);font-weight:700;background:#fafbfd}.student-notes{min-width:180px;max-width:320px;white-space:normal;line-height:1.6;overflow-wrap:anywhere;color:#526579}
     .empty{text-align:center;color:var(--muted);padding:28px}.tag{display:inline-block;padding:4px 9px;border-radius:20px;background:#e8f7f3;color:#08785f;font-size:12px}
     .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.field{display:grid;gap:7px}.field label{font-size:14px;font-weight:700}.field input,.field select{width:100%}
     .hidden{display:none!important}.footer{color:var(--muted);font-size:12px;text-align:center;padding:10px}
@@ -105,7 +105,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><select id="studentGroupFilter" aria-label="تصفية الطلاب حسب الحلقة"><option value="">كل الحلقات</option></select><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
@@ -297,7 +297,7 @@ async function addStudent(event){
   }
 }
 async function loadStudents(){
-  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr>';
+  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr>';
 let query = db.from("students")
     .select("id, full_name, group_id, created_by, notes, gender, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
@@ -306,11 +306,11 @@ let query = db.from("students")
   if(selectedGroup) query=query.eq("group_id",selectedGroup);
   const {data,error}=await query;
   if(error){
-    tbody.innerHTML='<tr><td colspan="4" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="5" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
     message("تعذر تحميل الطلاب: "+error.message,"error");
     return;
   }
-  if(!data?.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
 
   const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
   let groupNames={};
@@ -329,6 +329,7 @@ let query = db.from("students")
       <td>${escapeHtml(row.full_name||"—")}</td>
       <td>${row.gender==="male"?'<span class="tag">ذكر</span>':row.gender==="female"?'<span class="group-pill">أنثى</span>':'<span class="group-pill unassigned">غير محدد</span>'}</td>
       <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</span></td>
+      <td class="student-notes">${escapeHtml(row.notes||"—")}</td>
       <td>${canEdit ? `<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button><button class="delete-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="حذف ${escapeHtml(row.full_name||"الطالب")}">حذف</button>` : "—"}</td>
     </tr>`;
   }).join("");
