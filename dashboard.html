@@ -149,6 +149,7 @@
       <button data-view="students">الطلاب</button>
       <button data-view="teachers">المعلمون</button>
       <button data-view="groups">المجموعات</button>
+      <button data-view="attendanceReports" id="attendanceReportsNav">تقارير الحضور</button>
       <button data-view="statistics" id="statisticsNav">الإحصائيات</button>
     </nav>
     <p class="side-note">بوابة الإدارة<br>تظهر البيانات بحسب صلاحيات الحساب المسجّل.</p>
@@ -242,6 +243,28 @@
         </div>
       </section>
     </section>
+    <section id="attendanceReportsView" class="hidden">
+      <div class="cards">
+        <div class="card"><div class="metric-label">سجلات الحضور</div><div class="metric" id="reportPresentCount">—</div></div>
+        <div class="card"><div class="metric-label">سجلات الغياب</div><div class="metric" id="reportAbsentCount">—</div></div>
+        <div class="card"><div class="metric-label">غياب بعذر</div><div class="metric" id="reportExcusedCount">—</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>تقارير الحضور والغياب</h2><p class="sub">اختر فترة زمنية وحلقة لعرض السجلات المحفوظة. هذه التقارير لا تحتسب رسومًا مالية.</p></div></div>
+        <div class="form-grid">
+          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate"></div>
+          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate"></div>
+          <div class="field"><label for="reportGroupFilter">الحلقة</label><select id="reportGroupFilter"><option value="">كل الحلقات المتاحة</option></select></div>
+          <div class="field"><label for="reportStudentSearch">اسم الطالب (اختياري)</label><input id="reportStudentSearch" placeholder="ابحث باسم الطالب"></div>
+          <div class="field"><label for="reportStatusFilter">حالة الحضور</label><select id="reportStatusFilter"><option value="">كل الحالات</option><option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option></select></div>
+        </div>
+        <div class="actions" style="margin-top:14px"><button class="btn primary" type="button" id="runAttendanceReport">عرض التقرير</button><button class="btn secondary" type="button" id="resetAttendanceReport">إعادة ضبط</button></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>نتائج التقرير</h2><span class="group-count" id="attendanceReportRowsCount">0 سجل</span></div>
+        <div class="table-wrap"><table style="min-width:760px"><thead><tr><th>التاريخ</th><th>اسم الطالب</th><th>الحلقة</th><th>الحالة</th><th>الملاحظة</th></tr></thead><tbody id="attendanceReportRows"><tr><td colspan="5" class="empty">اختر الفترة ثم اضغط «عرض التقرير».</td></tr></tbody></table></div>
+      </div>
+    </section>
     <section id="statisticsView" class="hidden">
       <div class="cards">
         <div class="card"><div class="metric-label">إجمالي الطلاب</div><div class="metric" id="statsStudentsCount">—</div></div>
@@ -317,9 +340,10 @@ function confirmDialog({title="تأكيد العملية",text="هل تريد ا
 }
 function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
 function showView(view){
-  ["overview","students","teachers","groups","statistics"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
+  ["overview","students","teachers","groups","attendanceReports","statistics"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
   document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
-  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"المجموعات",statistics:"الإحصائيات"})[view];
+  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"المجموعات",attendanceReports:"تقارير الحضور",statistics:"الإحصائيات"})[view];
+  if(view==="attendanceReports") loadAttendanceReportOptions();
 }
 document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
 $("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();location.replace("./index.html");});
@@ -373,6 +397,55 @@ async function loadGroupOptions(){
     filter.appendChild(filterOption);
   }
 }
+let reportOptionsLoaded=false;
+async function loadAttendanceReportOptions(){
+  if(reportOptionsLoaded)return;
+  const select=$("reportGroupFilter");
+  const {data,error}=await db.from("groups").select("id,name").order("name").limit(500);
+  if(error){message("تعذر تحميل حلقات تقرير الحضور: "+error.message,"error");return;}
+  for(const group of (data||[])){
+    const option=document.createElement("option");option.value=group.id;option.textContent=group.name||"حلقة بدون اسم";select.appendChild(option);
+  }
+  reportOptionsLoaded=true;
+}
+function reportStatusLabel(status){
+  return status==="present"?"حاضر":status==="absent"?"غائب":status==="excused"?"غائب بعذر":status||"غير محدد";
+}
+async function loadAttendanceReport(){
+  const start=$("reportStartDate").value, end=$("reportEndDate").value;
+  if(start&&end&&start>end){message("تاريخ البداية يجب أن يكون قبل تاريخ النهاية.","error");return;}
+  const tbody=$("attendanceReportRows");tbody.innerHTML='<tr><td colspan="5" class="empty">جارٍ إعداد التقرير...</td></tr>';
+  let query=db.from("attendance_records").select("id,student_id,group_id,attendance_date,status,note,marked_by").order("attendance_date",{ascending:false}).limit(5000);
+  if(start)query=query.gte("attendance_date",start);
+  if(end)query=query.lte("attendance_date",end);
+  if($("reportGroupFilter").value)query=query.eq("group_id",$("reportGroupFilter").value);
+  if($("reportStatusFilter").value)query=query.eq("status",$("reportStatusFilter").value);
+  const {data,error}=await query;
+  if(error){tbody.innerHTML='<tr><td colspan="5" class="empty">تعذر تحميل التقرير. تحقق من صلاحيات قراءة سجلات الحضور.</td></tr>';message("تعذر تحميل تقرير الحضور: "+error.message,"error");return;}
+  const records=data||[];
+  if(!records.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا توجد سجلات ضمن الفترة المحددة.</td></tr>';["reportPresentCount","reportAbsentCount","reportExcusedCount"].forEach(id=>$(id).textContent="0");$("attendanceReportRowsCount").textContent="0 سجل";return;}
+  const studentIds=[...new Set(records.map(r=>r.student_id).filter(Boolean))], groupIds=[...new Set(records.map(r=>r.group_id).filter(Boolean))];
+  const [studentsRes,groupsRes]=await Promise.all([
+    studentIds.length?db.from("students").select("id,full_name").in("id",studentIds):Promise.resolve({data:[],error:null}),
+    groupIds.length?db.from("groups").select("id,name").in("id",groupIds):Promise.resolve({data:[],error:null})
+  ]);
+  if(studentsRes.error||groupsRes.error){message("تم جلب السجلات لكن تعذر جلب بعض أسماء الطلاب أو الحلقات.","error");}
+  const studentNames=Object.fromEntries((studentsRes.data||[]).map(x=>[x.id,x.full_name||"طالب بلا اسم"]));
+  const groupNames=Object.fromEntries((groupsRes.data||[]).map(x=>[x.id,x.name||"حلقة بدون اسم"]));
+  const needle=$("reportStudentSearch").value.trim().toLocaleLowerCase("ar");
+  const filtered=records.filter(r=>!needle||(studentNames[r.student_id]||"").toLocaleLowerCase("ar").includes(needle));
+  $("reportPresentCount").textContent=filtered.filter(r=>r.status==="present").length;
+  $("reportAbsentCount").textContent=filtered.filter(r=>r.status==="absent").length;
+  $("reportExcusedCount").textContent=filtered.filter(r=>r.status==="excused").length;
+  $("attendanceReportRowsCount").textContent=`${filtered.length} سجل`;
+  tbody.innerHTML=filtered.length?filtered.map(r=>`<tr><td>${escapeHtml(r.attendance_date||"—")}</td><td>${escapeHtml(studentNames[r.student_id]||"طالب غير متاح")}</td><td>${escapeHtml(groupNames[r.group_id]||"حلقة غير متاحة")}</td><td><span class="attendance-status ${escapeHtml(r.status)}">${escapeHtml(reportStatusLabel(r.status))}</span></td><td>${escapeHtml(r.note||"—")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">لا توجد سجلات تطابق اسم الطالب.</td></tr>';
+}
+$("runAttendanceReport").addEventListener("click",loadAttendanceReport);
+$("resetAttendanceReport").addEventListener("click",()=>{
+  $("reportStartDate").value="";$("reportEndDate").value="";$("reportGroupFilter").value="";$("reportStudentSearch").value="";$("reportStatusFilter").value="";
+  $("attendanceReportRows").innerHTML='<tr><td colspan="5" class="empty">اختر الفترة ثم اضغط «عرض التقرير».</td></tr>';
+  $("reportPresentCount").textContent="—";$("reportAbsentCount").textContent="—";$("reportExcusedCount").textContent="—";$("attendanceReportRowsCount").textContent="0 سجل";
+});
 async function addStudent(event){
   event.preventDefault();
   if(!currentProfile || !["manager","teacher"].includes(currentProfile.role)){
