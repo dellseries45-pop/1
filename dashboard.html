@@ -11,7 +11,7 @@
     :root{--navy:#10283f;--teal:#078b91;--gold:#d5ad62;--bg:#f3f6fa;--text:#19334b;--muted:#718096;--border:#dce4ed;--danger:#c94350}
     *{box-sizing:border-box}body{margin:0;font-family:"Tajawal",sans-serif;background:var(--bg);color:var(--text)}
     button,input,select{font:inherit}button{cursor:pointer}.shell{min-height:100vh;display:grid;grid-template-columns:260px 1fr}
-    aside{background:var(--navy);color:white;padding:25px 18px}.brand{font-size:24px;font-weight:800;padding:8px 10px 25px;border-bottom:1px solid #ffffff25}.brand span{color:var(--gold)}
+    aside{background:var(--navy);color:white;padding:25px 18px}.brand{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:800;padding:4px 6px 17px;border-bottom:1px solid #ffffff25}.brand span{color:var(--gold)}.brand-logo{width:54px;height:54px;object-fit:cover;border-radius:50%;background:#fff;border:2px solid #dfb75f;box-shadow:0 4px 14px #0002;flex-shrink:0}
     .nav{display:grid;gap:8px;margin-top:24px}.nav button{border:0;border-radius:10px;text-align:right;padding:13px 14px;background:transparent;color:#e6edf4}.nav button.active,.nav button:hover{background:#ffffff17;color:white}
     .side-note{margin:35px 10px 0;font-size:13px;color:#bdcad7;line-height:1.8}
     main{padding:28px;min-width:0}.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:25px}
@@ -69,7 +69,7 @@
     body{background:radial-gradient(ellipse at 85% 0%,rgba(7,143,145,.09),transparent 34%),radial-gradient(ellipse at 0% 80%,rgba(223,183,95,.09),transparent 28%),var(--bg)}
     aside{background:linear-gradient(165deg,#102b46 0%,#163c57 58%,#075c68 100%);position:relative;overflow:hidden}
     aside:before{content:"";position:absolute;width:240px;height:240px;border:1px solid #ffffff12;border-radius:50%;inset:auto -110px -70px auto;box-shadow:0 0 0 24px #ffffff08,0 0 0 48px #ffffff05;pointer-events:none}
-    .brand{letter-spacing:.1px}.brand:before{content:"✦";display:inline-grid;place-items:center;width:34px;height:34px;margin-inline-end:9px;border-radius:11px;background:linear-gradient(135deg,#f1d58f,#c89b43);color:#102b46;font-size:17px;vertical-align:middle;box-shadow:0 6px 18px #0002}
+    .brand{letter-spacing:.1px}
     .nav button{transition:background .18s,transform .18s,border-color .18s;border:1px solid transparent}.nav button:hover{transform:translateX(-2px)}.nav button.active{background:linear-gradient(110deg,#ffffff24,#ffffff0b);border-color:#ffffff22;box-shadow:inset -3px 0 0 var(--gold)}
     main{padding:30px clamp(16px,2.4vw,36px)}h1{letter-spacing:-.4px}.sub{line-height:1.7}
     .btn,.edit-student-btn,.delete-student-btn{transition:transform .16s,box-shadow .16s,background .16s}.btn:hover,.edit-student-btn:hover,.delete-student-btn:hover{transform:translateY(-1px);box-shadow:0 7px 16px #102b4614}
@@ -130,20 +130,27 @@
     @media(max-width:600px){.panel{padding:14px}.panel-head{align-items:stretch}.panel-head .tools{display:grid;grid-template-columns:1fr 1fr;width:100%}.panel-head .tools input{grid-column:1/-1;width:100%}.panel-head .tools select,.panel-head .tools button{width:100%;min-width:0}.form-grid{gap:12px}.student-table{min-width:760px}th,td{padding:11px 10px}}
 
     /* Full-page group detail view, ready for future enrollment and finance fields */
-    .group-detail-hero{position:relative;overflow:hidden;margin-bottom:20px;padding:24px;border-radius:22px;color:#fff;background:radial-gradient(circle at 8% 15%,#ffffff20,transparent 26%),linear-gradient(125deg,#102b46 0%,#155367 66%,#078f91 100%);box-shadow:0 18px 42px rgba(16,43,70,.16)}
-    .group-back-btn{background:#ffffffeb;border-color:#ffffff80;color:var(--navy);margin-bottom:22px}
-    .group-detail-title-row{display:flex;align-items:center;gap:15px}.group-detail-emblem{width:58px;height:58px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(145deg,#f4dda0,#d6ae5b);color:#102b46;font-size:27px;box-shadow:0 10px 24px #071a2c35;flex-shrink:0}
-    .group-detail-eyebrow{margin:0 0 5px;color:#d8ecee;font-size:12px;font-weight:700}.group-detail-title-row h2{margin:0;color:#fff;font-size:clamp(23px,3vw,32px);overflow-wrap:anywhere}.group-detail-title-row p:last-child{margin:7px 0 0;color:#e1edf1;font-size:14px;line-height:1.7}
-    .group-detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:24px}.group-detail-metrics>div{padding:14px 16px;border:1px solid #ffffff24;border-radius:14px;background:#ffffff12;backdrop-filter:blur(6px);min-width:0}.group-detail-metrics span{display:block;color:#d4e5e9;font-size:12px}.group-detail-metrics strong{display:block;margin-top:5px;color:#fff;font-size:18px;overflow-wrap:anywhere}
-    .group-detail-panel{margin-bottom:20px}.group-student-search{min-height:40px;width:min(280px,100%);padding:9px 12px;border:1px solid var(--border);border-radius:11px;background:#fff}.group-students-table{min-width:0;table-layout:fixed}.group-students-table th,.group-students-table td{padding:14px 16px}.group-students-table .group-num-col{width:72px;text-align:center}.group-students-table td:first-child{text-align:center;color:var(--teal);font-weight:800}.group-students-table td:nth-child(2){font-weight:700;color:var(--navy);overflow-wrap:anywhere}.group-student-row-number{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#eaf7f6;color:#08777f}
+    .group-detail-hero{position:relative;overflow:hidden;margin-bottom:12px;padding:14px 18px;border-radius:16px;color:#fff;background:radial-gradient(circle at 8% 15%,#ffffff20,transparent 26%),linear-gradient(125deg,#102b46 0%,#155367 66%,#078f91 100%);box-shadow:0 18px 42px rgba(16,43,70,.16)}
+    .group-back-btn{background:#ffffffeb;border-color:#ffffff80;color:var(--navy);margin-bottom:10px;padding:7px 11px;font-size:13px}
+    .group-detail-title-row{display:flex;align-items:center;gap:12px}.group-detail-emblem{width:48px;height:48px;display:block;object-fit:cover;border-radius:50%;background:#fff;border:2px solid #dfb75f;box-shadow:0 5px 14px #071a2c25;flex-shrink:0}
+    .group-detail-eyebrow{margin:0 0 5px;color:#d8ecee;font-size:12px;font-weight:700}.group-detail-title-row h2{margin:0;color:#fff;font-size:clamp(20px,2.3vw,26px);overflow-wrap:anywhere}.group-detail-title-row p:last-child{margin:3px 0 0;color:#e1edf1;font-size:13px;line-height:1.5}
+    .group-detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.group-detail-metrics>div{padding:8px 12px;border:1px solid #ffffff24;border-radius:14px;background:#ffffff12;backdrop-filter:blur(6px);min-width:0}.group-detail-metrics span{display:block;color:#d4e5e9;font-size:12px}.group-detail-metrics strong{display:block;margin-top:2px;color:#fff;font-size:15px;overflow-wrap:anywhere}
+    .group-detail-panel{margin-bottom:12px}.group-student-search{min-height:40px;width:min(280px,100%);padding:9px 12px;border:1px solid var(--border);border-radius:11px;background:#fff}.group-students-table{min-width:0;table-layout:fixed}.group-students-table th,.group-students-table td{padding:9px 12px}.group-students-table .group-num-col{width:72px;text-align:center}.group-students-table td:first-child{text-align:center;color:var(--teal);font-weight:800}.group-students-table td:nth-child(2){font-weight:700;color:var(--navy);overflow-wrap:anywhere}.group-student-row-number{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#eaf7f6;color:#08777f}
     .attendance-panel{margin-top:18px}.attendance-toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.attendance-toolbar .field{min-width:190px;flex:1}.attendance-table{min-width:640px}.attendance-table select{min-width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#fff}.attendance-status{font-weight:700}.attendance-status.present{color:#087f5b}.attendance-status.absent{color:#c0392b}.attendance-status.excused{color:#9a6700}.attendance-help{padding:12px 14px;border-radius:12px;background:#eef8f7;color:#315b61;font-size:13px;line-height:1.7;margin-top:12px}
-    @media(max-width:600px){.group-detail-hero{padding:17px;border-radius:17px}.group-detail-metrics{grid-template-columns:1fr 1fr}.group-detail-metrics>div:first-child{grid-column:1/-1}.group-detail-title-row{align-items:flex-start}.group-detail-emblem{width:45px;height:45px;border-radius:14px}.group-detail-panel .panel-head{align-items:stretch}.group-student-search{width:100%}.group-students-table th,.group-students-table td{padding:12px 10px}}
+    @media(max-width:600px){.group-detail-hero{padding:12px;border-radius:14px}.group-detail-metrics{grid-template-columns:1fr 1fr}.group-detail-metrics>div:first-child{grid-column:1/-1}.group-detail-title-row{align-items:flex-start}.group-detail-emblem{width:40px;height:40px;border-radius:50%}.group-detail-panel .panel-head{align-items:stretch}.group-student-search{width:100%}.group-students-table th,.group-students-table td{padding:12px 10px}}
+
+    /* Site-wide spacing refinement: clearer page context with less empty space */
+    aside{padding:18px 15px}.nav{gap:5px;margin-top:16px}.nav button{padding:10px 12px} .side-note{margin-top:22px}
+    main{padding:22px clamp(14px,2vw,28px)} .topbar{margin-bottom:17px;gap:12px} h1{font-size:24px}.sub{margin-top:3px;line-height:1.5}
+    .cards{gap:12px;margin-bottom:16px}.card{padding:15px}.metric{font-size:27px;margin-top:5px}.panel{padding:16px;margin-bottom:14px}.panel-head{margin-bottom:12px;padding-bottom:8px}.form-grid{gap:11px}
+    .empty{padding:22px 12px!important}
+    @media(max-width:850px){aside{padding:12px}main{padding:14px}.brand{padding-bottom:10px}.nav{margin-top:9px}.nav button{padding:9px 11px}.topbar{margin-bottom:14px}}
   </style>
 </head>
 <body>
 <div class="shell">
   <aside>
-    <div class="brand">أكاديمية <span>تزكى</span></div>
+    <div class="brand"><img class="brand-logo" src="https://i.imgur.com/cdRvZEW.jpg" alt="شعار أكاديمية تزكى"><div>أكاديمية <span>تزكى</span></div></div>
     <nav class="nav" aria-label="القائمة الرئيسية">
       <button class="active" data-view="overview">نظرة عامة</button>
       <button data-view="students">الطلاب</button>
@@ -225,7 +232,7 @@
       <section id="groupDetailView" class="hidden" aria-live="polite">
         <div class="group-detail-hero">
           <button type="button" class="btn secondary group-back-btn" id="backToGroups">→ العودة إلى الحلقات</button>
-          <div class="group-detail-title-row"><div class="group-detail-emblem" aria-hidden="true">✦</div><div><p class="group-detail-eyebrow">أكاديمية تزكى · إدارة الحلقات</p><h2 id="groupDetailName">تفاصيل الحلقة</h2><p id="groupDetailSubtitle">قائمة الطلاب المسجلين في الحلقة</p></div></div>
+          <div class="group-detail-title-row"><img class="group-detail-emblem" src="https://i.imgur.com/cdRvZEW.jpg" alt="شعار أكاديمية تزكى"><div><p class="group-detail-eyebrow">أكاديمية تزكى · إدارة الحلقات</p><h2 id="groupDetailName">تفاصيل الحلقة</h2><p id="groupDetailSubtitle">قائمة الطلاب المسجلين في الحلقة</p></div></div>
           <div class="group-detail-metrics"><div><span>عدد الطلاب</span><strong id="groupDetailStudentCount">—</strong></div><div><span>البيانات المالية</span><strong>مرحلة لاحقة</strong></div><div><span>تاريخ التسجيل</span><strong>سيُضاف لاحقًا</strong></div></div>
         </div>
         <div class="panel group-detail-panel"><div class="panel-head"><div><h2>طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل والبيانات المالية في المرحلة التالية.</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
