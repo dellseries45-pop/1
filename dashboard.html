@@ -31,6 +31,8 @@
     .group-pill.unassigned{background:#f1f4f8;color:#64748b}
     .edit-student-btn{display:inline-flex;align-items:center;gap:7px;background:#e8f7f7;color:#08777b;border:1px solid #c6eeee;padding:8px 13px;border-radius:9px;font-weight:800}
     .edit-student-btn:hover{background:#d7f1f1;transform:translateY(-1px)}
+    .delete-student-btn{display:inline-flex;align-items:center;gap:7px;background:#fff0f1;color:var(--danger);border:1px solid #f4cbd0;padding:8px 13px;border-radius:9px;font-weight:800;margin-inline-start:6px}
+    .delete-student-btn:hover{background:#ffe1e4}
     .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(12,31,49,.56);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
     .modal-backdrop.hidden{display:none!important}
     .edit-modal{width:min(620px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e4ebf2;border-radius:20px;box-shadow:0 25px 80px #0b203744;animation:modalIn .18s ease-out}
@@ -327,7 +329,7 @@ let query = db.from("students")
       <td>${escapeHtml(row.full_name||"—")}</td>
       <td>${row.gender==="male"?'<span class="tag">ذكر</span>':row.gender==="female"?'<span class="group-pill">أنثى</span>':'<span class="group-pill unassigned">غير محدد</span>'}</td>
       <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</span></td>
-      <td>${canEdit ? `<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button>` : "—"}</td>
+      <td>${canEdit ? `<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button><button class="delete-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="حذف ${escapeHtml(row.full_name||"الطالب")}">حذف</button>` : "—"}</td>
     </tr>`;
   }).join("");
 }
@@ -349,7 +351,41 @@ function openStudentEdit(row,groupNames){
  $("studentEditStatus").className="modal-status";$("studentEditStatus").textContent="";setSaveState("يمكنك مراجعة البيانات قبل الحفظ.");
  $("studentEditBackdrop").classList.remove("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","false");document.body.classList.add("modal-open");setTimeout(()=>$("editStudentName").focus(),30);
 }
-$("studentsRows").addEventListener("click",event=>{const b=event.target.closest(".edit-student-btn");if(!b)return;const row=window.__studentRows?.[b.dataset.id];if(row)openStudentEdit(row,window.__studentGroupNames||{});});
+$("studentsRows").addEventListener("click",async event=>{
+  const editButton=event.target.closest(".edit-student-btn");
+  if(editButton){
+    const row=window.__studentRows?.[editButton.dataset.id];
+    if(row)openStudentEdit(row,window.__studentGroupNames||{});
+    return;
+  }
+  const deleteButton=event.target.closest(".delete-student-btn");
+  if(!deleteButton)return;
+  const row=window.__studentRows?.[deleteButton.dataset.id];
+  if(!row)return;
+  const ownUnassigned=!row.group_id&&row.created_by===currentProfile?.id;
+  const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
+  const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&(ownUnassigned||assigned));
+  if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}
+  const studentName=row.full_name||"هذا الطالب";
+  if(!window.confirm(`هل أنت متأكد من حذف «${studentName}»؟ لا يمكن التراجع عن هذا الإجراء.`))return;
+  deleteButton.disabled=true;
+  deleteButton.textContent="جارٍ الحذف...";
+  try{
+    const {data,error}=await db.from("students").delete().eq("id",row.id).select("id");
+    if(error)throw error;
+    if(!data?.length)throw new Error("لم يُحذف أي سجل؛ قد لا تسمح سياسات قاعدة البيانات بهذا الإجراء.");
+    message("تم حذف الطالب بنجاح.","info");
+    await loadStudents();
+    if(currentProfile?.role==="manager"){
+      const {count,error:countError}=await db.from("students").select("*",{count:"exact",head:true});
+      if(!countError)$("studentsCount").textContent=count??0;
+    }
+  }catch(err){
+    message("تعذر حذف الطالب. تحقق من صلاحيات RLS. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");
+    deleteButton.disabled=false;
+    deleteButton.textContent="حذف";
+  }
+});
 $("closeStudentModal").addEventListener("click",()=>closeStudentEdit());
 $("cancelStudentModal").addEventListener("click",()=>closeStudentEdit());
 $("studentEditBackdrop").addEventListener("click",e=>{if(e.target===$("studentEditBackdrop"))closeStudentEdit();});
