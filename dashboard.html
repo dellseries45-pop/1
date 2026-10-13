@@ -63,6 +63,23 @@
     @media(max-width:600px){.modal-backdrop{padding:8px;align-items:center}.edit-modal{max-height:calc(100dvh - 16px);border-radius:16px}.modal-head,.modal-body{padding:12px 14px}.modal-foot{padding:10px 14px;align-items:center;flex-direction:row}.modal-grid{grid-template-columns:1fr}.modal-grid .wide{grid-column:auto}.modal-foot .actions{width:100%}.modal-foot .btn{flex:1}}
 
     @media(max-width:850px){.shell{grid-template-columns:1fr}aside{padding:15px}.brand{padding-bottom:14px}.nav{display:flex;overflow:auto;margin-top:12px}.nav button{white-space:nowrap}.side-note{display:none}main{padding:17px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+
+    /* Refinement pass: brighter, more polished academy dashboard */
+    :root{--navy:#102b46;--teal:#078f91;--gold:#dfb75f;--bg:#f2f6fb;--text:#19344e;--muted:#6d8195;--border:#dce6ef;--danger:#c63f52;--glow:0 18px 48px rgba(16,43,70,.09)}
+    body{background:radial-gradient(ellipse at 85% 0%,rgba(7,143,145,.09),transparent 34%),radial-gradient(ellipse at 0% 80%,rgba(223,183,95,.09),transparent 28%),var(--bg)}
+    aside{background:linear-gradient(165deg,#102b46 0%,#163c57 58%,#075c68 100%);position:relative;overflow:hidden}
+    aside:before{content:"";position:absolute;width:240px;height:240px;border:1px solid #ffffff12;border-radius:50%;inset:auto -110px -70px auto;box-shadow:0 0 0 24px #ffffff08,0 0 0 48px #ffffff05;pointer-events:none}
+    .brand{letter-spacing:.1px}.brand:before{content:"✦";display:inline-grid;place-items:center;width:34px;height:34px;margin-inline-end:9px;border-radius:11px;background:linear-gradient(135deg,#f1d58f,#c89b43);color:#102b46;font-size:17px;vertical-align:middle;box-shadow:0 6px 18px #0002}
+    .nav button{transition:background .18s,transform .18s,border-color .18s;border:1px solid transparent}.nav button:hover{transform:translateX(-2px)}.nav button.active{background:linear-gradient(110deg,#ffffff24,#ffffff0b);border-color:#ffffff22;box-shadow:inset -3px 0 0 var(--gold)}
+    main{padding:30px clamp(16px,2.4vw,36px)}h1{letter-spacing:-.4px}.sub{line-height:1.7}
+    .btn,.edit-student-btn,.delete-student-btn{transition:transform .16s,box-shadow .16s,background .16s}.btn:hover,.edit-student-btn:hover,.delete-student-btn:hover{transform:translateY(-1px);box-shadow:0 7px 16px #102b4614}
+    .primary{background:linear-gradient(135deg,#0b9b9a,#08777f)}.card,.panel{border-radius:18px;box-shadow:var(--glow);border-color:#e0e8f0}.card{position:relative;overflow:hidden}.card:after{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--teal),#9adbd5,var(--gold));opacity:.85}.metric{letter-spacing:-.7px}
+    .panel-head{padding-bottom:12px;border-bottom:1px solid #edf2f7}th{background:#f5f8fc;color:#526c83}tbody tr{transition:background .15s}tbody tr:hover{background:#f8fbfd}td{vertical-align:middle}
+    .tag,.group-pill{box-shadow:inset 0 0 0 1px #0b89860c}.edit-student-btn{background:linear-gradient(135deg,#e9f9f8,#dff3f2);border-color:#c7eae8}.delete-student-btn{background:linear-gradient(135deg,#fff4f4,#ffe9ec);border-color:#f3cbd1}
+    .notice{backdrop-filter:blur(14px);box-shadow:0 18px 50px #102b4620;border-radius:16px}.confirm-backdrop,.modal-backdrop{background:rgba(8,27,44,.62)}.confirm-card,.edit-modal{border-radius:22px;box-shadow:0 30px 90px rgba(8,27,44,.28)}.confirm-card h2,.modal-head h2{letter-spacing:-.2px}.confirm-actions{background:linear-gradient(180deg,#f9fbfd,#f2f6fa)}
+    .confirm-danger{background:linear-gradient(135deg,#d94b5c,#b92f45);box-shadow:0 7px 18px #c9435025}.confirm-cancel{transition:background .15s}.confirm-cancel:hover{background:#f0f5f8}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal)!important;box-shadow:0 0 0 3px #078f911c}
+    @media(max-width:850px){aside{background:linear-gradient(110deg,#102b46,#075c68)}main{padding:18px}.card,.panel{border-radius:15px}}
   </style>
 </head>
 <body>
@@ -342,12 +359,15 @@ let query = db.from("students")
     const isOwnUnassignedStudent=!row.group_id && row.created_by===currentProfile?.id;
     const isAssignedGroupStudent=!!row.group_id && window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
     const canEdit=currentProfile?.role==="manager" || (currentProfile?.role==="teacher" && (isOwnUnassignedStudent || isAssignedGroupStudent));
+    const canDelete=currentProfile?.role==="manager" || (currentProfile?.role==="teacher" && isAssignedGroupStudent);
+    const editAction=canEdit?`<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button>`:"";
+    const deleteAction=canDelete?`<button class="delete-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="حذف ${escapeHtml(row.full_name||"الطالب")}">حذف</button>`:"";
     return `<tr>
       <td>${escapeHtml(row.full_name||"—")}</td>
       <td>${row.gender==="male"?'<span class="tag">ذكر</span>':row.gender==="female"?'<span class="group-pill">أنثى</span>':'<span class="group-pill unassigned">غير محدد</span>'}</td>
       <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "مجموعة غير متاحة") : "بدون مجموعة")}</span></td>
       <td class="student-notes">${escapeHtml(row.notes||"—")}</td>
-      <td>${canEdit ? `<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button><button class="delete-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="حذف ${escapeHtml(row.full_name||"الطالب")}">حذف</button>` : "—"}</td>
+      <td>${editAction}${deleteAction||(!canEdit?"—":"")}</td>
     </tr>`;
   }).join("");
 }
@@ -380,9 +400,8 @@ $("studentsRows").addEventListener("click",async event=>{
   if(!deleteButton)return;
   const row=window.__studentRows?.[deleteButton.dataset.id];
   if(!row)return;
-  const ownUnassigned=!row.group_id&&row.created_by===currentProfile?.id;
   const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
-  const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&row.created_by===currentProfile.id&&(ownUnassigned||assigned));
+  const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);
   if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}
   const studentName=row.full_name||"هذا الطالب";
   if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${studentName}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;
