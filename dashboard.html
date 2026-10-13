@@ -202,17 +202,7 @@
       </div>
     </section>
     <section id="groupsView" class="hidden">
-      <div class="panel" id="createGroupPanel">
-        <div class="panel-head"><h2>إضافة حلقة جديدة</h2></div>
-        <form id="createGroupForm">
-          <div class="form-grid">
-            <div class="field"><label for="newGroupName">اسم الحلقة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
-          </div>
-          <div class="actions" style="margin-top:14px"><button class="btn primary" id="createGroupBtn" type="submit">إنشاء الحلقة</button></div>
-          <small class="sub">تُربط المجموعة تلقائيًا بحسابك، ولا يستطيع المعلم إدارة حلقات المعلمين الآخرين.</small>
-        </form>
-      </div>
-      <div class="panel" id="groupsListPanel"><div class="panel-head"><div><h2>الحلقات</h2><p class="sub">اختر الحلقة لفتح صفحة تفاصيلها وقائمة طلابها.</p></div><span class="group-count" id="visibleGroupsCount">— حلقة</span></div>
+      <div class="panel" id="groupsListPanel"><div class="panel-head"><div><h2>الحلقات</h2><p class="sub">اختر الحلقة لفتح صفحة تفاصيلها وقائمة طلابها.</p></div><div class="actions"><span class="group-count" id="visibleGroupsCount">— حلقة</span><button class="btn primary" id="openCreateGroupModal" type="button">＋ إضافة حلقة</button></div></div>
         <div class="groups-grid" id="groupsRows"><div class="empty">جارٍ تحميل الحلقات...</div></div>
       </div>
       <section id="groupDetailView" class="hidden" aria-live="polite">
@@ -286,6 +276,28 @@
       <footer class="modal-foot"><div class="save-state">يمكنك مراجعة البيانات قبل الحفظ.</div><div class="actions"><button type="button" class="btn secondary" id="cancelAddStudentModal">إلغاء</button><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button></div></footer>
     </form>
   </section>
+</div>
+
+
+<div id="createGroupBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="createGroupModalTitle">
+    <header class="modal-head"><div><h2 id="createGroupModalTitle">إضافة حلقة جديدة</h2><p>أدخل اسم الحلقة، ويمكنك إضافة رابط شعار اختياري.</p></div><button type="button" class="modal-close" id="closeCreateGroupModal" aria-label="إغلاق">×</button></header>
+    <form id="createGroupForm">
+      <div class="modal-body"><div class="modal-grid">
+        <div class="modal-field"><label for="newGroupName">اسم الحلقة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
+        <div class="modal-field"><label for="newGroupLogo">رابط شعار الحلقة (اختياري)</label><input id="newGroupLogo" type="url" maxlength="1000" placeholder="https://example.com/logo.png"><small class="modal-hint">ضع رابط صورة مباشرًا إذا كان للحلقة شعار.</small></div>
+      </div><p class="modal-hint">تُربط الحلقة تلقائيًا بحسابك، وتظل صلاحيات إدارة الحلقات خاضعة لدورك.</p></div>
+      <footer class="modal-foot"><div class="save-state">يمكنك ترك رابط الشعار فارغًا.</div><div class="actions"><button type="button" class="btn secondary" id="cancelCreateGroupModal">إلغاء</button><button class="btn primary" id="createGroupBtn" type="submit">إنشاء الحلقة</button></div></footer>
+    </form>
+  </section>
+</div>
+
+<div id="studentManageBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+ <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="studentManageTitle">
+  <header class="modal-head"><div><h2 id="studentManageTitle">إدارة الطالب</h2><p id="studentManageDescription">اختر الإجراء المطلوب.</p></div><button type="button" class="modal-close" id="closeStudentManageModal" aria-label="إغلاق">×</button></header>
+  <div class="modal-body"><div class="actions"><button type="button" class="btn primary" id="manageEditStudent">✎ تعديل بيانات الطالب</button><button type="button" class="btn danger" id="manageDeleteStudent">حذف الطالب</button></div></div>
+  <footer class="modal-foot"><div class="save-state">تُطبق صلاحيات حسابك على التعديل والحذف.</div><div class="actions"><button type="button" class="btn secondary" id="cancelStudentManageModal">إغلاق</button></div></footer>
+ </section>
 </div>
 
 <div id="studentEditBackdrop" class="modal-backdrop hidden" aria-hidden="true">
@@ -365,7 +377,7 @@ $("openAddStudentModal").addEventListener("click",()=>setAddStudentModal(true));
 $("closeAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
 $("cancelAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
 $("addStudentBackdrop").addEventListener("click",e=>{if(e.target===$("addStudentBackdrop"))setAddStudentModal(false);});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);if(e.key==="Escape"&&!$("createGroupBackdrop").classList.contains("hidden"))setCreateGroupModal(false);if(e.key==="Escape"&&!$("studentManageBackdrop").classList.contains("hidden"))closeStudentManageModal();});
 $("createTeacherForm").addEventListener("submit", createTeacher);
 $("createGroupForm").addEventListener("submit", createGroup);
 async function requireProfile(){
@@ -526,14 +538,13 @@ let query = db.from("students")
     const isAssignedGroupStudent=!!row.group_id && window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
     const canEdit=currentProfile?.role==="manager" || (currentProfile?.role==="teacher" && (isOwnUnassignedStudent || isAssignedGroupStudent));
     const canDelete=currentProfile?.role==="manager" || (currentProfile?.role==="teacher" && isAssignedGroupStudent);
-    const editAction=canEdit?`<button class="edit-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="تعديل بيانات ${escapeHtml(row.full_name||"الطالب")}">✎ تعديل</button>`:"";
-    const deleteAction=canDelete?`<button class="delete-student-btn" data-id="${escapeHtml(row.id)}" type="button" aria-label="حذف ${escapeHtml(row.full_name||"الطالب")}">حذف</button>`:"";
+    const manageAction=(canEdit||canDelete)?`<button class="student-manage-btn btn secondary" data-id="${escapeHtml(row.id)}" type="button">إدارة</button>`:"—";
     return `<tr>
       <td>${escapeHtml(row.full_name||"—")}</td>
       <td>${row.gender==="male"?'<span class="tag">ذكر</span>':row.gender==="female"?'<span class="group-pill">أنثى</span>':'<span class="group-pill unassigned">غير محدد</span>'}</td>
       <td><span class="group-pill ${row.group_id?"":"unassigned"}">${escapeHtml(row.group_id ? (groupNames[row.group_id] || "حلقة غير متاحة") : "بدون حلقة")}</span></td>
       <td class="student-notes">${escapeHtml(row.notes||"—")}</td>
-      <td>${editAction}${deleteAction||(!canEdit?"—":"")}</td>
+      <td>${manageAction}</td>
     </tr>`;
   }).join("");
 }
@@ -555,40 +566,21 @@ function openStudentEdit(row,groupNames){
  $("studentEditStatus").className="modal-status";$("studentEditStatus").textContent="";setSaveState("يمكنك مراجعة البيانات قبل الحفظ.");
  $("studentEditBackdrop").classList.remove("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","false");document.body.classList.add("modal-open");setTimeout(()=>$("editStudentName").focus(),30);
 }
-$("studentsRows").addEventListener("click",async event=>{
-  const editButton=event.target.closest(".edit-student-btn");
-  if(editButton){
-    const row=window.__studentRows?.[editButton.dataset.id];
-    if(row)openStudentEdit(row,window.__studentGroupNames||{});
-    return;
-  }
-  const deleteButton=event.target.closest(".delete-student-btn");
-  if(!deleteButton)return;
-  const row=window.__studentRows?.[deleteButton.dataset.id];
-  if(!row)return;
-  const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
-  const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);
-  if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}
-  const studentName=row.full_name||"هذا الطالب";
-  if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${studentName}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;
-  deleteButton.disabled=true;
-  deleteButton.textContent="جارٍ الحذف...";
-  try{
-    const {data,error}=await db.from("students").delete().eq("id",row.id).select("id");
-    if(error)throw error;
-    if(!data?.length)throw new Error("لم يُحذف أي سجل؛ قد لا تسمح سياسات قاعدة البيانات بهذا الإجراء.");
-    message("تم حذف الطالب بنجاح.","info");
-    await loadStudents();
-    if(currentProfile?.role==="manager"){
-      const {count,error:countError}=await db.from("students").select("*",{count:"exact",head:true});
-      if(!countError)$("studentsCount").textContent=count??0;
-    }
-  }catch(err){
-    message("تعذر حذف الطالب. تحقق من صلاحيات RLS. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");
-    deleteButton.disabled=false;
-    deleteButton.textContent="حذف";
-  }
-});
+let managingStudentId=null;
+function setCreateGroupModal(open){const modal=$("createGroupBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);if(open)setTimeout(()=>$("newGroupName").focus(),30);}
+$("openCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(true));
+$("closeCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(false));
+$("cancelCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(false));
+$("createGroupBackdrop").addEventListener("click",e=>{if(e.target===$("createGroupBackdrop"))setCreateGroupModal(false);});
+function setStudentManageModal(open){const modal=$("studentManageBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);}
+function closeStudentManageModal(){setStudentManageModal(false);managingStudentId=null;}
+$("closeStudentManageModal").addEventListener("click",closeStudentManageModal);
+$("cancelStudentManageModal").addEventListener("click",closeStudentManageModal);
+$("studentManageBackdrop").addEventListener("click",e=>{if(e.target===$("studentManageBackdrop"))closeStudentManageModal();});
+$("studentsRows").addEventListener("click",event=>{const btn=event.target.closest(".student-manage-btn");if(!btn)return;managingStudentId=btn.dataset.id;const row=window.__studentRows?.[managingStudentId];if(!row)return;$("studentManageTitle").textContent="إدارة الطالب: "+(row.full_name||"بلا اسم");const ownUnassigned=!row.group_id&&row.created_by===currentProfile?.id,assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;const canEdit=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&row.created_by===currentProfile.id&&(ownUnassigned||assigned));const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);$("manageEditStudent").classList.toggle("hidden",!canEdit);$("manageDeleteStudent").classList.toggle("hidden",!canDelete);setStudentManageModal(true);});
+$("manageEditStudent").addEventListener("click",()=>{const row=window.__studentRows?.[managingStudentId];if(!row)return;const id=managingStudentId;closeStudentManageModal();openStudentEdit(row,window.__studentGroupNames||{});});
+$("manageDeleteStudent").addEventListener("click",async()=>{const row=window.__studentRows?.[managingStudentId];if(!row)return;const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${row.full_name||"هذا الطالب"}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;const id=managingStudentId;try{const {data,error}=await db.from("students").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم يُحذف أي سجل؛ تحقق من صلاحيات الحساب.");closeStudentManageModal();message("تم حذف الطالب بنجاح.","info");await loadStudents();}catch(err){message("تعذر حذف الطالب: "+(err?.message||"خطأ غير معروف"),"error");}});
+
 $("closeStudentModal").addEventListener("click",()=>closeStudentEdit());
 $("cancelStudentModal").addEventListener("click",()=>closeStudentEdit());
 $("studentEditBackdrop").addEventListener("click",e=>{if(e.target===$("studentEditBackdrop"))closeStudentEdit();});
@@ -668,10 +660,11 @@ async function createGroup(event){
   const button=$("createGroupBtn");
   button.disabled=true;button.textContent="جارٍ الإنشاء...";
   try{
-    const group={name,teacher_id:currentProfile.role==="teacher"?currentProfile.id:null};
+    const group={name,logo_url:$("newGroupLogo").value.trim()||null,teacher_id:currentProfile.role==="teacher"?currentProfile.id:null};
     const {error}=await db.from("groups").insert(group);
     if(error) throw error;
     $("createGroupForm").reset();
+    setCreateGroupModal(false);
     message("تم إنشاء الحلقة بنجاح.","info");
     await loadGroups();
     await loadGroupOptions();
@@ -688,7 +681,7 @@ async function createGroup(event){
 async function loadGroups(){
   const container=$("groupsRows");
   container.innerHTML='<div class="empty">جارٍ تحميل الحلقات...</div>';
-  const {data,error}=await db.from("groups").select("id,name,teacher_id").order("name").limit(200);
+  const {data,error}=await db.from("groups").select("id,name,teacher_id,logo_url").order("name").limit(200);
   if(error){container.innerHTML='<div class="empty">تعذر تحميل الحلقات.</div>';message("تعذر تحميل الحلقات: "+error.message,"error");return;}
   const groups=data||[];
   const countLabel=$("visibleGroupsCount");if(countLabel)countLabel.textContent=`${groups.length} ${groups.length===1?"حلقة":"حلقات"}`;
@@ -696,7 +689,7 @@ async function loadGroups(){
   container.innerHTML=groups.map((row,index)=>{
     const title=row.name||"حلقة بدون اسم";
     return `<article class="group-card" data-group-card="${row.id}">
-      <div class="group-card-head"><div class="group-icon" aria-hidden="true">✦</div><div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>حلقة تعليمية</span><span aria-hidden="true">•</span><span>رقم ${index+1}</span></div></div></div>
+      <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>حلقة تعليمية</span><span aria-hidden="true">•</span><span>رقم ${index+1}</span></div></div></div>
       <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">قائمة الطلاب</span><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
