@@ -377,7 +377,7 @@ function showView(view){
 }
 document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
 $("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();location.replace("./index.html");});
-$("refreshBtn").addEventListener("click",loadDashboard);
+const refreshBtn=$("refreshBtn");if(refreshBtn)refreshBtn.addEventListener("click",loadDashboard);
 $("refreshStatsBtn").addEventListener("click",loadStatistics);
 $("searchStudents").addEventListener("click",loadStudents);
 $("studentGroupFilter").addEventListener("change",loadStudents);
