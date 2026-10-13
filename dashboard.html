@@ -141,12 +141,19 @@
     .cards{gap:12px;margin-bottom:16px}.card{padding:15px}.metric{font-size:27px;margin-top:5px}.panel{padding:16px;margin-bottom:14px}.panel-head{margin-bottom:12px;padding-bottom:8px}.form-grid{gap:11px}
     .empty{padding:22px 12px!important}
     @media(max-width:850px){aside{padding:12px}main{padding:14px}.brand{padding-bottom:10px}.nav{margin-top:9px}.nav button{padding:9px 11px}.topbar{margin-bottom:14px}}
-  </style>
+  
+    .sidebar-welcome{margin:10px 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:var(--text,#fff);font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
+    .sidebar-logout{display:block;width:100%;margin-top:18px}
+    .topbar #welcome{display:none}
+    .group-detail-panel .group-back-btn{margin-bottom:8px;padding:6px 10px;font-size:.85rem}
+    .group-detail-panel .panel-head{gap:8px}
+</style>
 </head>
 <body>
 <div class="shell">
   <aside>
     <div class="brand"><img class="brand-logo" src="https://i.imgur.com/gA6y80y.png" alt="شعار أكاديمية تزكى"><div>أكاديمية <span>تزكى</span></div></div>
+    <p class="sidebar-welcome" id="sidebarWelcome">جارٍ التحقق من الحساب...</p>
     <nav class="nav" aria-label="القائمة الرئيسية">
       <button class="active" data-view="overview">نظرة عامة</button>
       <button data-view="students">الطلاب</button>
@@ -154,13 +161,14 @@
       <button data-view="groups">الحلقات</button>
       <button data-view="attendanceReports" id="attendanceReportsNav">تقارير الحضور</button>
       <button data-view="statistics" id="statisticsNav">الإحصائيات</button>
+      <button class="btn danger sidebar-logout" id="logoutBtn">تسجيل الخروج</button>
     </nav>
     <p class="side-note">بوابة الإدارة<br>تظهر البيانات بحسب صلاحيات الحساب المسجّل.</p>
   </aside>
   <main>
     <header class="topbar">
       <div><h1 id="pageTitle">نظرة عامة</h1><p class="sub" id="welcome">جارٍ التحقق من الجلسة...</p></div>
-      <div class="actions"><button class="btn secondary" id="refreshBtn">تحديث البيانات</button><button class="btn danger" id="logoutBtn">تسجيل الخروج</button></div>
+      
     </header>
     <div id="notice" class="notice" role="status" aria-live="polite"><span id="noticeText" class="notice-content"></span><button type="button" id="closeNotice" class="notice-close" aria-label="إغلاق الرسالة" title="إغلاق">×</button></div>
     <section id="overviewView">
@@ -202,12 +210,8 @@
         <div class="groups-grid" id="groupsRows"><div class="empty">جارٍ تحميل الحلقات...</div></div>
       </div>
       <section id="groupDetailView" class="hidden" aria-live="polite">
-        <div class="group-detail-hero">
-          <button type="button" class="btn secondary group-back-btn" id="backToGroups">→ العودة إلى الحلقات</button>
-          <div class="group-detail-title-row"><img class="group-detail-emblem" src="https://i.imgur.com/gA6y80y.png" alt="شعار أكاديمية تزكى"><div><p class="group-detail-eyebrow">أكاديمية تزكى · إدارة الحلقات</p><h2 id="groupDetailName">تفاصيل الحلقة</h2><p id="groupDetailSubtitle">قائمة الطلاب المسجلين في الحلقة</p></div></div>
-          <div class="group-detail-metrics"><div><span>عدد الطلاب</span><strong id="groupDetailStudentCount">—</strong></div><div><span>البيانات المالية</span><strong>مرحلة لاحقة</strong></div><div><span>تاريخ التسجيل</span><strong>سيُضاف لاحقًا</strong></div></div>
-        </div>
-        <div class="panel group-detail-panel"><div class="panel-head"><div><h2>طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل والبيانات المالية في المرحلة التالية.</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
+        <div class="hidden" aria-hidden="true"><span id="groupDetailSubtitle"></span><span id="groupDetailStudentCount"></span></div>
+        <div class="panel group-detail-panel"><div class="panel-head"><div><button type="button" class="btn secondary group-back-btn" id="backToGroups">← الحلقات</button><h2 id="groupDetailName">طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل والبيانات المالية في المرحلة التالية.</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
           <div class="table-wrap"><table class="group-students-table"><thead><tr><th class="group-num-col">#</th><th>اسم الطالب</th></tr></thead><tbody id="groupStudentsRows"><tr><td colspan="2" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
         </div>
         <div class="panel attendance-panel" id="attendancePanel">
@@ -394,7 +398,9 @@ async function requireProfile(){
     await db.auth.signOut();location.replace("./index.html");return false;
   }
   currentProfile={...profile,id:user.id};
-  $("welcome").textContent=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
+  const welcomeText=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
+  const welcomeEl=$("welcome");if(welcomeEl)welcomeEl.textContent=welcomeText;
+  const sidebarWelcome=$("sidebarWelcome");if(sidebarWelcome)sidebarWelcome.textContent=welcomeText;
   if(profile.role!=="manager"){
     $("createTeacherPanel").classList.add("hidden");
     // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
