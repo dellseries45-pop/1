@@ -143,7 +143,15 @@
     @media(max-width:850px){aside{padding:12px}main{padding:14px}.brand{padding-bottom:10px}.nav{margin-top:9px}.nav button{padding:9px 11px}.topbar{margin-bottom:14px}}
   
     .sidebar-welcome{margin:10px 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#fff!important;-webkit-text-fill-color:#fff;font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
-    input[type="date"]{direction:ltr!important;unicode-bidi:isolate;text-align:left!important;font-family:Arial,sans-serif;letter-spacing:normal;word-spacing:normal}
+    input[type="date"]{direction:ltr!important;unicode-bidi:isolate;text-align:left!important;font-family:Arial,sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important;font-variant-numeric:tabular-nums}
+    /* Fix browser-rendered date segments separately; these labels are controlled by the date input internals, not the page font. */
+    input[type="date"]::-webkit-datetime-edit,
+    input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+    input[type="date"]::-webkit-datetime-edit-text,
+    input[type="date"]::-webkit-datetime-edit-month-field,
+    input[type="date"]::-webkit-datetime-edit-day-field,
+    input[type="date"]::-webkit-datetime-edit-year-field{direction:ltr!important;unicode-bidi:isolate!important;font-family:Arial,sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important}
+    input[type="date"]::-webkit-calendar-picker-indicator{direction:ltr}
     .sidebar-logout{display:block;width:100%;margin-top:18px}
     .topbar #welcome{display:none}
     .group-detail-panel .group-back-btn{margin-bottom:8px;padding:6px 10px;font-size:.85rem}
