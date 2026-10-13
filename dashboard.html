@@ -150,7 +150,7 @@
 <body>
 <div class="shell">
   <aside>
-    <div class="brand"><img class="brand-logo" src="https://i.imgur.com/cdRvZEW.jpg" alt="شعار أكاديمية تزكى"><div>أكاديمية <span>تزكى</span></div></div>
+    <div class="brand"><img class="brand-logo" src="https://i.imgur.com/gA6y80y.png" alt="شعار أكاديمية تزكى"><div>أكاديمية <span>تزكى</span></div></div>
     <nav class="nav" aria-label="القائمة الرئيسية">
       <button class="active" data-view="overview">نظرة عامة</button>
       <button data-view="students">الطلاب</button>
@@ -177,22 +177,8 @@
     </section>
     <section id="studentsView" class="hidden">
       <div class="panel" id="addStudentPanel">
-        <div class="panel-head"><h2>إضافة طالب جديد</h2></div>
-        <form id="addStudentForm">
-          <div class="form-grid">
-            <div class="field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
-            <div class="field"><label for="newStudentGender">الجنس</label><select id="newStudentGender" name="gender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
-            <div class="field">
-              <label for="newStudentGroup">الحلقة (اختياري)</label>
-              <select id="newStudentGroup" name="group_id">
-                <option value="">بدون حلقة</option>
-              </select>
-              <small>اختر مجموعة من القائمة، أو اترك الخيار «بدون حلقة» إذا لم تكن هناك مجموعة.</small>
-            </div>
-            <div class="field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
-          </div>
-          <div class="actions" style="margin-top:14px"><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button></div>
-        </form>
+        <div class="panel-head"><h2>إدارة الطلاب</h2><button class="btn primary" id="openAddStudentModal" type="button">＋ تسجيل طالب جديد</button></div>
+        <p class="sub">اضغط على «تسجيل طالب جديد» لفتح نموذج التسجيل.</p>
       </div>
       <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><select id="studentGroupFilter" aria-label="تصفية الطلاب حسب الحلقة"><option value="">كل الحلقات</option></select><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
         <div class="table-wrap student-table-wrap"><table class="student-table"><colgroup><col class="col-student-name"><col class="col-student-gender"><col class="col-student-group"><col class="col-student-notes"><col class="col-student-actions"></colgroup><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
@@ -232,7 +218,7 @@
       <section id="groupDetailView" class="hidden" aria-live="polite">
         <div class="group-detail-hero">
           <button type="button" class="btn secondary group-back-btn" id="backToGroups">→ العودة إلى الحلقات</button>
-          <div class="group-detail-title-row"><img class="group-detail-emblem" src="https://i.imgur.com/cdRvZEW.jpg" alt="شعار أكاديمية تزكى"><div><p class="group-detail-eyebrow">أكاديمية تزكى · إدارة الحلقات</p><h2 id="groupDetailName">تفاصيل الحلقة</h2><p id="groupDetailSubtitle">قائمة الطلاب المسجلين في الحلقة</p></div></div>
+          <div class="group-detail-title-row"><img class="group-detail-emblem" src="https://i.imgur.com/gA6y80y.png" alt="شعار أكاديمية تزكى"><div><p class="group-detail-eyebrow">أكاديمية تزكى · إدارة الحلقات</p><h2 id="groupDetailName">تفاصيل الحلقة</h2><p id="groupDetailSubtitle">قائمة الطلاب المسجلين في الحلقة</p></div></div>
           <div class="group-detail-metrics"><div><span>عدد الطلاب</span><strong id="groupDetailStudentCount">—</strong></div><div><span>البيانات المالية</span><strong>مرحلة لاحقة</strong></div><div><span>تاريخ التسجيل</span><strong>سيُضاف لاحقًا</strong></div></div>
         </div>
         <div class="panel group-detail-panel"><div class="panel-head"><div><h2>طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل والبيانات المالية في المرحلة التالية.</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
@@ -241,7 +227,7 @@
         <div class="panel attendance-panel" id="attendancePanel">
           <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب حسب تاريخ الحلقة، لتسهيل احتساب الرسوم لاحقًا.</p></div></div>
           <div class="attendance-toolbar">
-            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date"></div>
+            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-GB" dir="ltr" style="text-align:left"></div>
             <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
             <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
           </div>
@@ -259,8 +245,8 @@
       <div class="panel">
         <div class="panel-head"><div><h2>تقارير الحضور والغياب</h2><p class="sub">اختر فترة زمنية وحلقة لعرض السجلات المحفوظة. هذه التقارير لا تحتسب رسومًا مالية.</p></div></div>
         <div class="form-grid">
-          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate"></div>
-          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate"></div>
+          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate" lang="en-GB" dir="ltr" style="text-align:left"></div>
+          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate" lang="en-GB" dir="ltr" style="text-align:left"></div>
           <div class="field"><label for="reportGroupFilter">الحلقة</label><select id="reportGroupFilter"><option value="">كل الحلقات المتاحة</option></select></div>
           <div class="field"><label for="reportStudentSearch">اسم الطالب (اختياري)</label><input id="reportStudentSearch" placeholder="ابحث باسم الطالب"></div>
           <div class="field"><label for="reportStatusFilter">حالة الحضور</label><select id="reportStatusFilter"><option value="">كل الحالات</option><option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option></select></div>
@@ -285,6 +271,21 @@
     </section>
     <p class="footer"> أكاديمية تزكى - تصميم مصطفى عبد العزيز </p>
   </main>
+</div>
+
+<div id="addStudentBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="addStudentModalTitle" aria-describedby="addStudentModalDescription">
+    <header class="modal-head"><div><h2 id="addStudentModalTitle">تسجيل طالب جديد</h2><p id="addStudentModalDescription">أدخل بيانات الطالب ثم اضغط حفظ الطالب.</p></div><button type="button" class="modal-close" id="closeAddStudentModal" aria-label="إغلاق نافذة التسجيل">×</button></header>
+    <form id="addStudentForm">
+      <div class="modal-body"><div class="modal-grid">
+        <div class="modal-field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
+        <div class="modal-field"><label for="newStudentGender">الجنس</label><select id="newStudentGender" name="gender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+        <div class="modal-field"><label for="newStudentGroup">الحلقة (اختياري)</label><select id="newStudentGroup" name="group_id"><option value="">بدون حلقة</option></select><small class="modal-hint">اختر الحلقة المناسبة، أو اترك «بدون حلقة».</small></div>
+        <div class="modal-field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
+      </div></div>
+      <footer class="modal-foot"><div class="save-state">يمكنك مراجعة البيانات قبل الحفظ.</div><div class="actions"><button type="button" class="btn secondary" id="cancelAddStudentModal">إلغاء</button><button class="btn primary" id="addStudentBtn" type="submit">حفظ الطالب</button></div></footer>
+    </form>
+  </section>
 </div>
 
 <div id="studentEditBackdrop" class="modal-backdrop hidden" aria-hidden="true">
@@ -359,6 +360,12 @@ $("refreshStatsBtn").addEventListener("click",loadStatistics);
 $("searchStudents").addEventListener("click",loadStudents);
 $("studentGroupFilter").addEventListener("change",loadStudents);
 $("addStudentForm").addEventListener("submit", addStudent);
+function setAddStudentModal(open){const modal=$("addStudentBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);if(open)setTimeout(()=>$("newStudentName").focus(),30);}
+$("openAddStudentModal").addEventListener("click",()=>setAddStudentModal(true));
+$("closeAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
+$("cancelAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
+$("addStudentBackdrop").addEventListener("click",e=>{if(e.target===$("addStudentBackdrop"))setAddStudentModal(false);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);});
 $("createTeacherForm").addEventListener("submit", createTeacher);
 $("createGroupForm").addEventListener("submit", createGroup);
 async function requireProfile(){
@@ -481,6 +488,7 @@ async function addStudent(event){
     return;
   }
   $("addStudentForm").reset();
+  setAddStudentModal(false);
   message("تمت إضافة الطالب بنجاح.","info");
   await loadStudents();
   if(currentProfile.role==="manager"){
