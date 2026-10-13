@@ -136,6 +136,7 @@
     .group-detail-eyebrow{margin:0 0 5px;color:#d8ecee;font-size:12px;font-weight:700}.group-detail-title-row h2{margin:0;color:#fff;font-size:clamp(23px,3vw,32px);overflow-wrap:anywhere}.group-detail-title-row p:last-child{margin:7px 0 0;color:#e1edf1;font-size:14px;line-height:1.7}
     .group-detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:24px}.group-detail-metrics>div{padding:14px 16px;border:1px solid #ffffff24;border-radius:14px;background:#ffffff12;backdrop-filter:blur(6px);min-width:0}.group-detail-metrics span{display:block;color:#d4e5e9;font-size:12px}.group-detail-metrics strong{display:block;margin-top:5px;color:#fff;font-size:18px;overflow-wrap:anywhere}
     .group-detail-panel{margin-bottom:20px}.group-student-search{min-height:40px;width:min(280px,100%);padding:9px 12px;border:1px solid var(--border);border-radius:11px;background:#fff}.group-students-table{min-width:0;table-layout:fixed}.group-students-table th,.group-students-table td{padding:14px 16px}.group-students-table .group-num-col{width:72px;text-align:center}.group-students-table td:first-child{text-align:center;color:var(--teal);font-weight:800}.group-students-table td:nth-child(2){font-weight:700;color:var(--navy);overflow-wrap:anywhere}.group-student-row-number{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#eaf7f6;color:#08777f}
+    .attendance-panel{margin-top:18px}.attendance-toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.attendance-toolbar .field{min-width:190px;flex:1}.attendance-table{min-width:640px}.attendance-table select{min-width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#fff}.attendance-status{font-weight:700}.attendance-status.present{color:#087f5b}.attendance-status.absent{color:#c0392b}.attendance-status.excused{color:#9a6700}.attendance-help{padding:12px 14px;border-radius:12px;background:#eef8f7;color:#315b61;font-size:13px;line-height:1.7;margin-top:12px}
     @media(max-width:600px){.group-detail-hero{padding:17px;border-radius:17px}.group-detail-metrics{grid-template-columns:1fr 1fr}.group-detail-metrics>div:first-child{grid-column:1/-1}.group-detail-title-row{align-items:flex-start}.group-detail-emblem{width:45px;height:45px;border-radius:14px}.group-detail-panel .panel-head{align-items:stretch}.group-student-search{width:100%}.group-students-table th,.group-students-table td{padding:12px 10px}}
   </style>
 </head>
@@ -228,6 +229,16 @@
         </div>
         <div class="panel group-detail-panel"><div class="panel-head"><div><h2>طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل والبيانات المالية في المرحلة التالية.</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
           <div class="table-wrap"><table class="group-students-table"><thead><tr><th class="group-num-col">#</th><th>اسم الطالب</th></tr></thead><tbody id="groupStudentsRows"><tr><td colspan="2" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
+        </div>
+        <div class="panel attendance-panel" id="attendancePanel">
+          <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب حسب تاريخ الحلقة، لتسهيل احتساب الرسوم لاحقًا.</p></div></div>
+          <div class="attendance-toolbar">
+            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date"></div>
+            <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
+            <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
+          </div>
+          <div class="attendance-help">اختر التاريخ، ثم حدّد لكل طالب: حاضر أو غائب أو غياب بعذر. لن تُحتسب أي رسوم تلقائيًا في هذه المرحلة؛ سنربط سجلات الحضور بالنظام المالي بعد اعتماد قواعد الرسوم.</div>
+          <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:190px">الحالة</th><th>ملاحظة (اختياري)</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
         </div>
       </section>
     </section>
@@ -607,6 +618,8 @@ async function loadGroups(){
 // فتح الحلقة في صفحة تفاصيل كاملة داخل لوحة التحكم.
 let activeGroupStudents = [];
 let activeGroupName = "";
+let activeGroupId = null;
+const todayISO = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
 const groupsListPanel = $("groupsListPanel");
 const createGroupPanel = $("createGroupPanel");
 const groupDetailView = $("groupDetailView");
@@ -617,7 +630,9 @@ function showGroupsList(){
   const title=$("pageTitle");if(title)title.textContent="المجموعات";
 }
 async function openGroupDetail(groupId, groupName){
+  activeGroupId=groupId;
   activeGroupName=groupName||"حلقة تعليمية";
+  if(!$("attendanceDate").value) $("attendanceDate").value=todayISO();
   groupsListPanel.classList.add("hidden");
   createGroupPanel.classList.add("hidden");
   groupDetailView.classList.remove("hidden");
@@ -632,6 +647,7 @@ async function openGroupDetail(groupId, groupName){
   activeGroupStudents=data||[];
   $("groupDetailStudentCount").textContent=activeGroupStudents.length;
   renderGroupStudents(activeGroupStudents);
+  await loadAttendanceForDate();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderGroupStudents(students){
@@ -639,6 +655,51 @@ function renderGroupStudents(students){
   if(!students.length){tbody.innerHTML='<tr><td colspan="2" class="empty">لا يوجد طلاب يطابقون البحث في هذه الحلقة.</td></tr>';return;}
   tbody.innerHTML=students.map((student,index)=>`<tr><td><span class="group-student-row-number">${index+1}</span></td><td>${escapeHtml(student.full_name||"طالب بلا اسم")}</td></tr>`).join("");
 }
+function renderAttendanceRows(){
+  const tbody=$("attendanceRows");
+  if(!activeGroupStudents.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا يوجد طلاب في هذه الحلقة.</td></tr>';return;}
+  tbody.innerHTML=activeGroupStudents.map((student,index)=>`<tr data-attendance-student="${student.id}">
+    <td><span class="group-student-row-number">${index+1}</span></td>
+    <td style="font-weight:700;color:var(--navy)">${escapeHtml(student.full_name||"طالب بلا اسم")}</td>
+    <td><select class="attendance-status-select" aria-label="حالة حضور ${escapeHtml(student.full_name||"الطالب")}">
+      <option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option>
+    </select></td>
+    <td><input class="attendance-note-input" maxlength="500" placeholder="ملاحظة اختيارية" aria-label="ملاحظة الحضور"></td>
+  </tr>`).join("");
+}
+async function loadAttendanceForDate(){
+  if(!activeGroupId)return;
+  const date=$("attendanceDate").value||todayISO();
+  $("attendanceDate").value=date;
+  renderAttendanceRows();
+  const {data,error}=await db.from("attendance_records").select("student_id,status,note").eq("group_id",activeGroupId).eq("attendance_date",date);
+  if(error){
+    message("تعذر تحميل الحضور. تأكد من إنشاء جدول attendance_records وتطبيق سياساته في Supabase. "+error.message,"error");
+    return;
+  }
+  const records=new Map((data||[]).map(r=>[r.student_id,r]));
+  document.querySelectorAll("#attendanceRows tr[data-attendance-student]").forEach(row=>{
+    const record=records.get(row.dataset.attendanceStudent);
+    if(record){row.querySelector(".attendance-status-select").value=record.status;row.querySelector(".attendance-note-input").value=record.note||"";}
+  });
+}
+async function saveAttendance(){
+  if(!activeGroupId){message("افتح حلقة أولًا قبل حفظ الحضور.","error");return;}
+  const date=$("attendanceDate").value;
+  if(!date){message("اختر تاريخ الحضور أولًا.","error");return;}
+  const rows=[...document.querySelectorAll("#attendanceRows tr[data-attendance-student]")];
+  if(!rows.length){message("لا يوجد طلاب لحفظ حضورهم.","error");return;}
+  const records=rows.map(row=>({student_id:row.dataset.attendanceStudent,group_id:activeGroupId,attendance_date:date,status:row.querySelector(".attendance-status-select").value,note:row.querySelector(".attendance-note-input").value.trim()||null,marked_by:currentProfile.id}));
+  const button=$("saveAttendanceBtn");button.disabled=true;const oldText=button.textContent;button.textContent="جارٍ الحفظ...";
+  const {error}=await db.from("attendance_records").upsert(records,{onConflict:"student_id,attendance_date"});
+  button.disabled=false;button.textContent=oldText;
+  if(error){message("تعذر حفظ الحضور: "+error.message,"error");return;}
+  message("تم حفظ سجل الحضور والغياب بنجاح.","success");
+}
+$("loadAttendanceBtn").addEventListener("click",loadAttendanceForDate);
+$("saveAttendanceBtn").addEventListener("click",saveAttendance);
+$("attendanceDate").addEventListener("change",loadAttendanceForDate);
+
 $("groupsRows").addEventListener("click",async event=>{
   const button=event.target.closest("[data-view-group]");if(!button)return;
   const card=button.closest("[data-group-card]");
