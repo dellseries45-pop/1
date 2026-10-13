@@ -692,9 +692,15 @@ async function createGroup(event){
   const button=$("createGroupBtn");
   button.disabled=true;button.textContent="جارٍ الإنشاء...";
   try{
-    const group={name,logo_url:$("newGroupLogo").value.trim()||null,teacher_id:currentProfile.role==="teacher"?currentProfile.id:null};
-    const {error}=await db.from("groups").insert(group);
-    if(error) throw error;
+    const logoUrl=$("newGroupLogo").value.trim()||null;
+    const group={name,teacher_id:currentProfile.role==="teacher"?currentProfile.id:null};
+    // الشعار اختياري؛ إذا لم يكن العمود موجودًا بعد في قاعدة البيانات، أنشئ الحلقة دون الشعار بدل تعطيل العملية.
+    let result=await db.from("groups").insert(logoUrl?{...group,logo_url:logoUrl}:group);
+    if(result.error && logoUrl && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
+      result=await db.from("groups").insert(group);
+      if(!result.error) message("تم إنشاء الحلقة. لم يُحفظ الشعار لأن حقل الشعار غير مضاف في قاعدة البيانات بعد.","info");
+    }
+    if(result.error) throw result.error;
     $("createGroupForm").reset();
     setCreateGroupModal(false);
     message("تم إنشاء الحلقة بنجاح.","info");
@@ -713,8 +719,13 @@ async function createGroup(event){
 async function loadGroups(){
   const container=$("groupsRows");
   container.innerHTML='<div class="empty">جارٍ تحميل الحلقات...</div>';
-  const {data,error}=await db.from("groups").select("id,name,teacher_id,logo_url").order("name").limit(200);
-  if(error){container.innerHTML='<div class="empty">تعذر تحميل الحلقات.</div>';message("تعذر تحميل الحلقات: "+error.message,"error");return;}
+  let result=await db.from("groups").select("id,name,teacher_id,logo_url").order("name").limit(200);
+  // توافق مع قواعد البيانات التي لم يُضف إليها logo_url بعد.
+  if(result.error && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
+    result=await db.from("groups").select("id,name,teacher_id").order("name").limit(200);
+  }
+  const {data,error}=result;
+  if(error){container.innerHTML='<div class="empty">تعذر تحميل الحلقات. اضغط «تحديث البيانات» للمحاولة مجددًا.</div>';message("تعذر تحميل الحلقات: "+error.message,"error");return;}
   const groups=data||[];
   const countLabel=$("visibleGroupsCount");if(countLabel)countLabel.textContent=`${groups.length} ${groups.length===1?"حلقة":"حلقات"}`;
   if(!groups.length){container.innerHTML='<div class="empty">لا توجد حلقات متاحة لهذا الحساب حتى الآن.</div>';return;}
@@ -814,10 +825,13 @@ $("saveAttendanceBtn").addEventListener("click",saveAttendance);
 $("attendanceDate").addEventListener("change",loadAttendanceForDate);
 
 $("groupsRows").addEventListener("click",async event=>{
-  const button=event.target.closest("[data-view-group]");if(!button)return;
+  const button=event.target.closest("[data-view-group]");if(!button || button.disabled)return;
   const card=button.closest("[data-group-card]");
   const name=card?.querySelector(".group-title")?.textContent?.trim()||"حلقة تعليمية";
-  await openGroupDetail(button.dataset.viewGroup,name);
+  const original=button.innerHTML;button.disabled=true;button.textContent="جارٍ فتح الحلقة...";
+  try{await openGroupDetail(button.dataset.viewGroup,name);}
+  catch(err){message("تعذر فتح الحلقة: "+(err?.message||"حدث خطأ غير متوقع"),"error");}
+  finally{if(button.isConnected){button.disabled=false;button.innerHTML=original;}}
 });
 $("backToGroups").addEventListener("click",()=>{showGroupsList();window.scrollTo({top:0,behavior:"smooth"});});
 $("groupStudentSearch").addEventListener("input",()=>{
