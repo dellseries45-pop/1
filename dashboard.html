@@ -142,7 +142,8 @@
     .empty{padding:22px 12px!important}
     @media(max-width:850px){aside{padding:12px}main{padding:14px}.brand{padding-bottom:10px}.nav{margin-top:9px}.nav button{padding:9px 11px}.topbar{margin-bottom:14px}}
   
-    .sidebar-welcome{margin:10px 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:var(--text,#fff);font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
+    .sidebar-welcome{margin:10px 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#fff!important;-webkit-text-fill-color:#fff;font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
+    input[type="date"]{direction:ltr!important;unicode-bidi:isolate;text-align:left!important;font-family:Arial,sans-serif;letter-spacing:normal;word-spacing:normal}
     .sidebar-logout{display:block;width:100%;margin-top:18px}
     .topbar #welcome{display:none}
     .group-detail-panel .group-back-btn{margin-bottom:8px;padding:6px 10px;font-size:.85rem}
@@ -217,7 +218,7 @@
         <div class="panel attendance-panel" id="attendancePanel">
           <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب حسب تاريخ الحلقة، لتسهيل احتساب الرسوم لاحقًا.</p></div></div>
           <div class="attendance-toolbar">
-            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-GB" dir="ltr" style="text-align:left"></div>
+            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
             <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
             <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
           </div>
@@ -235,8 +236,8 @@
       <div class="panel">
         <div class="panel-head"><div><h2>تقارير الحضور والغياب</h2><p class="sub">اختر فترة زمنية وحلقة لعرض السجلات المحفوظة. هذه التقارير لا تحتسب رسومًا مالية.</p></div></div>
         <div class="form-grid">
-          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate" lang="en-GB" dir="ltr" style="text-align:left"></div>
-          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate" lang="en-GB" dir="ltr" style="text-align:left"></div>
+          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
+          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
           <div class="field"><label for="reportGroupFilter">الحلقة</label><select id="reportGroupFilter"><option value="">كل الحلقات المتاحة</option></select></div>
           <div class="field"><label for="reportStudentSearch">اسم الطالب (اختياري)</label><input id="reportStudentSearch" placeholder="ابحث باسم الطالب"></div>
           <div class="field"><label for="reportStatusFilter">حالة الحضور</label><select id="reportStatusFilter"><option value="">كل الحالات</option><option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option></select></div>
