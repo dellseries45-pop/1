@@ -748,17 +748,18 @@ const groupsListPanel = $("groupsListPanel");
 const createGroupPanel = $("createGroupPanel");
 const groupDetailView = $("groupDetailView");
 function showGroupsList(){
-  groupDetailView.classList.add("hidden");
-  groupsListPanel.classList.remove("hidden");
-  if(currentProfile?.role==="manager") createGroupPanel.classList.remove("hidden");
+  if(groupDetailView) groupDetailView.classList.add("hidden");
+  if(groupsListPanel) groupsListPanel.classList.remove("hidden");
+  if(currentProfile?.role==="manager" && createGroupPanel) createGroupPanel.classList.remove("hidden");
   const title=$("pageTitle");if(title)title.textContent="الحلقات";
 }
 async function openGroupDetail(groupId, groupName){
   activeGroupId=groupId;
   activeGroupName=groupName||"حلقة تعليمية";
   if(!$("attendanceDate").value) $("attendanceDate").value=todayISO();
-  groupsListPanel.classList.add("hidden");
-  createGroupPanel.classList.add("hidden");
+  if(groupsListPanel) groupsListPanel.classList.add("hidden");
+  if(createGroupPanel) createGroupPanel.classList.add("hidden");
+  if(!groupDetailView) throw new Error("لم يتم العثور على واجهة تفاصيل الحلقة في الصفحة.");
   groupDetailView.classList.remove("hidden");
   $("groupDetailName").textContent=activeGroupName;
   $("groupDetailSubtitle").textContent="قائمة الطلاب المسجلين في هذه الحلقة";
