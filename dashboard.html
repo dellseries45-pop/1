@@ -445,7 +445,7 @@ async function loadGroupOptions(){
   const select=$("newStudentGroup");
   const filter=$("studentGroupFilter");
   select.innerHTML='<option value="">بدون حلقة</option>';
-  filter.innerHTML='<option value="">اختر الحلقة لعرض الطلاب</option>';
+  filter.innerHTML='<option value="">اختر الحلقة لعرض الطلاب</option><option value="all">كل الحلقات</option>';
   const {data,error}=await db.from("groups").select("id,name").order("name").limit(200);
   if(error){
     message("تعذر تحميل قائمة الحلقات. يمكنك إضافة الطالب بدون حلقة. التفاصيل: "+error.message,"error");
@@ -553,16 +553,16 @@ async function loadStudents(){
   const tbody=$("studentsRows");
   const selectedGroup=$("studentGroupFilter").value;
   if(!selectedGroup){
-    tbody.innerHTML='<tr><td colspan="4" class="empty">اختر الحلقة من القائمة أعلاه لعرض بيانات الطلاب.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" class="empty">اختر الحلقة أو «كل الحلقات» لعرض بيانات الطلاب.</td></tr>';
     window.__studentRows={};
     return;
   }
-  tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ تحميل طلاب الحلقة...</td></tr>';
+  tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ تحميل الطلاب...</td></tr>';
 let query = db.from("students")
     .select("id, full_name, group_id, created_by, notes, gender, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
-  query=query.eq("group_id",selectedGroup);
+  if(selectedGroup!=="all") query=query.eq("group_id",selectedGroup);
   const {data,error}=await query;
   if(error){
     tbody.innerHTML='<tr><td colspan="4" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
