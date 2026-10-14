@@ -234,7 +234,7 @@
         </form>
       </div>
       <div class="panel"><div class="panel-head"><h2>المعلمون</h2></div>
-        <div class="table-wrap"><table><thead><tr><th>اسم المعلم</th><th>الحالة</th></tr></thead><tbody id="teachersRows"><tr><td colspan="2" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>اسم المعلم</th><th>الحالة</th><th>إجراءات المدير</th></tr></thead><tbody id="teachersRows"><tr><td colspan="3" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="groupsView" class="hidden">
@@ -728,10 +728,47 @@ async function createTeacher(event){
 }
 async function loadTeachers(){
   const tbody=$("teachersRows");
+  if(currentProfile?.role!=="manager"){tbody.innerHTML='<tr><td colspan="3" class="empty">إدارة حسابات المعلمين متاحة للمدير فقط.</td></tr>';return;}
   const {data,error}=await db.from("profiles").select("id,full_name,is_active,role").eq("role","teacher").order("full_name").limit(100);
-  if(error){tbody.innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل المعلمين.</td></tr>';return;}
-  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.full_name||"—")}</td><td>${row.is_active?'<span class="tag">نشط</span>':'غير نشط'}</td></tr>`).join(""):'<tr><td colspan="2" class="empty">لا توجد حسابات معلمين.</td></tr>';
+  if(error){tbody.innerHTML='<tr><td colspan="3" class="empty">تعذر تحميل المعلمين.</td></tr>';return;}
+  tbody.innerHTML=data?.length?data.map(row=>`<tr><td>${escapeHtml(row.full_name||"—")}</td><td>${row.is_active?'<span class="tag">نشط</span>':'غير نشط'}</td><td><div class="actions"><button class="btn secondary teacher-toggle-btn" type="button" data-teacher-toggle="${escapeHtml(row.id)}" data-active="${row.is_active?"true":"false"}">${row.is_active?"تعطيل الحساب":"تفعيل الحساب"}</button><button class="btn danger teacher-delete-btn" type="button" data-teacher-delete="${escapeHtml(row.id)}" data-teacher-name="${escapeHtml(row.full_name||"المعلم")}">حذف نهائي</button></div></td></tr>`).join(""):'<tr><td colspan="3" class="empty">لا توجد حسابات معلمين.</td></tr>';
 }
+
+// إجراءات إدارة الحسابات والحلقات. الحذف النهائي للمعلم يتطلب Edge Function آمنة باسم delete-teacher.
+$("teachersRows").addEventListener("click",async event=>{
+ const toggle=event.target.closest("[data-teacher-toggle]");
+ const del=event.target.closest("[data-teacher-delete]");
+ if(!toggle&&!del)return;
+ if(currentProfile?.role!=="manager"){message("هذه الإجراءات متاحة للمدير فقط.","error");return;}
+ if(toggle){
+  const id=toggle.dataset.teacherToggle;const currentlyActive=toggle.dataset.active==="true";
+  if(!await confirmDialog({title:currentlyActive?"تعطيل حساب المعلم":"إعادة تفعيل حساب المعلم",text:currentlyActive?"سيُمنع المعلم من الدخول، مع الاحتفاظ بسجلاته وبياناته. هل تريد المتابعة؟":"هل تريد إعادة تفعيل حساب هذا المعلم؟",confirmText:currentlyActive?"تعطيل الحساب":"تفعيل الحساب",danger:currentlyActive}))return;
+  toggle.disabled=true;
+  try{const {data,error}=await db.from("profiles").update({is_active:!currentlyActive}).eq("id",id).eq("role","teacher").select("id");if(error)throw error;if(!data?.length)throw new Error("لم يتم تحديث الحساب؛ تحقق من سياسات RLS.");message(currentlyActive?"تم تعطيل حساب المعلم مع الاحتفاظ بسجلاته.":"تم تفعيل حساب المعلم.","info");await loadTeachers();}
+  catch(err){message("تعذر تغيير حالة الحساب: "+(err?.message||"خطأ غير معروف"),"error");toggle.disabled=false;}return;
+ }
+ const teacherName=del.dataset.teacherName||"المعلم";
+ if(!await confirmDialog({title:"حذف نهائي لحساب المعلم",text:`سيُطلب من الخادم حذف حساب «${teacherName}». يجب أن تتحقق وظيفة الخادم من صلاحية المدير وتعالج العلاقات المرتبطة بأمان. هل تريد المتابعة؟`,confirmText:"طلب الحذف النهائي",danger:true}))return;
+ del.disabled=true;
+ try{const {data,error}=await db.functions.invoke("delete-teacher",{body:{teacher_id:del.dataset.teacherDelete}});if(error)throw error;if(data?.error)throw new Error(data.error);message(data?.message||"اكتملت عملية حذف المعلم.","info");await Promise.all([loadTeachers(),loadGroups(),loadStatistics()]);}
+ catch(err){message("لم يكتمل الحذف النهائي. تأكد من نشر Edge Function باسم delete-teacher وإعداد صلاحياتها. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");del.disabled=false;}
+});
+
+$("groupsRows").addEventListener("click",async event=>{
+ const btn=event.target.closest("[data-delete-group]");if(!btn)return;
+ if(!currentProfile||!["manager","teacher"].includes(currentProfile.role)){message("حذف الحلقات متاح للمدير والمعلم فقط.","error");return;}
+ const id=btn.dataset.deleteGroup,name=btn.dataset.groupName||"هذه الحلقة";
+ if(!await confirmDialog({title:"تأكيد حذف الحلقة",text:`سيتم حذف الحلقة «${name}» فقط إذا لم تكن مرتبطة بطلاب أو سجلات حضور. إذا كانت مرتبطة ببيانات، سيُرفض الحذف حفاظًا عليها. هل تريد المتابعة؟`,confirmText:"حذف الحلقة",danger:true}))return;
+ btn.disabled=true;
+ try{
+  const {count:studentCount,error:studentErr}=await db.from("students").select("id",{count:"exact",head:true}).eq("group_id",id);if(studentErr)throw studentErr;
+  if((studentCount||0)>0)throw new Error("لا يمكن حذف الحلقة لأنها مرتبطة بطلاب. انقل الطلاب أولًا أو عالج سجلاتهم.");
+  const {count:attendanceCount,error:attendanceErr}=await db.from("attendance_records").select("id",{count:"exact",head:true}).eq("group_id",id);if(attendanceErr && !/does not exist|schema cache/i.test(attendanceErr.message||""))throw attendanceErr;
+  if((attendanceCount||0)>0)throw new Error("لا يمكن حذف الحلقة لأنها مرتبطة بسجلات حضور.");
+  const {data,error}=await db.from("groups").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم تُحذف الحلقة؛ تحقق من سياسات RLS وصلاحيات قاعدة البيانات.");
+  message("تم حذف الحلقة الفارغة.","info");await Promise.all([loadGroups(),loadGroupOptions(),loadStudents()]);
+ }catch(err){message("تعذر حذف الحلقة: "+(err?.message||"خطأ غير معروف"),"error");btn.disabled=false;}
+});
 async function createGroup(event){
   event.preventDefault();
   if(!currentProfile || !["manager","teacher"].includes(currentProfile.role)){
@@ -781,9 +818,10 @@ async function loadGroups(){
   if(!groups.length){container.innerHTML='<div class="empty">لا توجد حلقات متاحة لهذا الحساب حتى الآن.</div>';return;}
   container.innerHTML=groups.map((row,index)=>{
     const title=row.name||"حلقة بدون اسم";
+    const deleteGroupAction=(currentProfile && ["manager","teacher"].includes(currentProfile.role))?`<button class="btn danger delete-group-btn" type="button" data-delete-group="${escapeHtml(row.id)}" data-group-name="${escapeHtml(title)}">حذف الحلقة</button>`:"";
     return `<article class="group-card" data-group-card="${row.id}">
       <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>حلقة تعليمية</span><span aria-hidden="true">•</span><span>رقم ${index+1}</span></div></div></div>
-      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">قائمة الطلاب</span><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div>
+      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">قائمة الطلاب</span><div class="actions">${deleteGroupAction}<button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
   }).join("");
