@@ -254,6 +254,7 @@
             <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
             <div class="field" style="min-width:150px"><label for="attendanceExportMonth">شهر التصدير</label><input id="attendanceExportMonth" type="month" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;font-family:Arial,sans-serif"></div>
             <button class="btn secondary" type="button" id="exportMonthlyAttendanceBtn">تصدير الحضور الشهري Excel</button>
+            <button class="btn danger hidden" type="button" id="resetMonthlyAttendanceBtn">تصفير حضور الشهر المحدد</button>
           </div>
           <div class="attendance-help">اختر التاريخ، ثم حدّد لكل طالب: حاضر أو غائب أو غياب بعذر. لن تُحتسب أي رسوم تلقائيًا في هذه المرحلة؛ سنربط سجلات الحضور بالنظام المالي بعد اعتماد قواعد الرسوم.</div>
           <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:190px">الحالة</th><th>ملاحظة (اختياري)</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
@@ -435,7 +436,10 @@ async function requireProfile(){
   const welcomeText=`مرحبًا ${profile.full_name||user.email} — ${profile.role==="manager"?"مدير":"معلم"}`;
   const welcomeEl=$("welcome");if(welcomeEl)welcomeEl.textContent=welcomeText;
   const sidebarWelcome=$("sidebarWelcome");if(sidebarWelcome)sidebarWelcome.textContent=welcomeText;
-  if(profile.role!=="manager"){
+  if(profile.role==="manager"){
+    $("resetMonthlyAttendanceBtn")?.classList.remove("hidden");
+  }else{
+    $("resetMonthlyAttendanceBtn")?.classList.add("hidden");
     $("createTeacherPanel").classList.add("hidden");
     // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
@@ -905,6 +909,64 @@ async function exportMonthlyAttendance(){
   }catch(err){message("تعذر تصدير الحضور الشهري: "+(err?.message||"خطأ غير معروف"),"error");}
   finally{button.disabled=false;button.textContent=oldText;}
 }
+
+async function resetMonthlyAttendance(){
+  if(!currentProfile || currentProfile.role!=="manager"){
+    message("تصفير الحضور متاح للمدير فقط.","error");return;
+  }
+  const monthValue=$("attendanceExportMonth").value || ($("attendanceDate").value||todayISO()).slice(0,7);
+  if(!/^\d{4}-\d{2}$/.test(monthValue)){message("اختر الشهر المطلوب أولًا.","error");return;}
+  $("attendanceExportMonth").value=monthValue;
+  const startDate=monthValue+"-01";
+  const endDate=new Date(Number(monthValue.slice(0,4)),Number(monthValue.slice(5,7)),1).toISOString().slice(0,10);
+  const button=$("resetMonthlyAttendanceBtn");
+  const oldText=button.textContent;
+  button.disabled=true;button.textContent="جارٍ إعداد النسخة الاحتياطية...";
+  try{
+    // Read all rows for the selected month in pages, before requesting deletion.
+    let records=[],from=0,pageSize=1000;
+    while(true){
+      const {data,error}=await db.from("attendance_records")
+        .select("id,student_id,group_id,attendance_date,status,note,marked_by,created_at,updated_at")
+        .gte("attendance_date",startDate).lt("attendance_date",endDate)
+        .order("attendance_date",{ascending:true}).range(from,from+pageSize-1);
+      if(error)throw error;
+      const page=data||[];records=records.concat(page);
+      if(page.length<pageSize)break;
+      from+=pageSize;
+    }
+    if(!records.length){message("لا توجد سجلات حضور في "+monthValue+"؛ لم يتم حذف أي شيء.","info");return;}
+    const esc=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+    const headers=["id","student_id","group_id","attendance_date","status","note","marked_by","created_at","updated_at"];
+    const csv="\uFEFF"+[headers.map(esc).join(";"),...records.map(r=>headers.map(h=>esc(r[h])).join(";"))].join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="نسخة-احتياطية-للحضور-"+monthValue+".csv";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    // Give the browser a moment to start the download before asking to proceed.
+    await new Promise(resolve=>setTimeout(resolve,700));
+    const confirmed=await confirmDialog({
+      title:"تأكيد تصفير حضور الشهر",
+      text:`تم تجهيز نسخة CSV احتياطية تضم ${records.length} سجلًا لشهر ${monthValue} وتنزيلها. هل تريد الآن حذف سجلات الحضور لهذا الشهر من Supabase نهائيًا؟ لا يمكن التراجع عن الحذف من داخل النظام.`,
+      confirmText:"نعم، احذف سجلات الشهر",
+      danger:true
+    });
+    if(!confirmed){message("أُلغي التصفير. لم تُحذف أي سجلات.","info");return;}
+    button.textContent="جارٍ حذف سجلات الشهر...";
+    const {data,error}=await db.functions.invoke("reset-attendance-month",{body:{month:monthValue}});
+    if(error){
+      let details=error.message||"تعذر الاتصال بوظيفة التصفير.";
+      try{if(error.context&&typeof error.context.json==="function"){const body=await error.context.json();if(body?.error)details=body.error;}}catch(_){}
+      throw new Error(details);
+    }
+    message(`تم حذف ${data?.deleted_count??records.length} سجل حضور لشهر ${monthValue} بعد إعداد النسخة الاحتياطية.`,"success");
+    if(activeGroupId)await loadAttendanceForDate();
+  }catch(err){
+    message("تعذر تصفير الحضور: "+(err?.message||"خطأ غير معروف"),"error");
+  }finally{button.disabled=false;button.textContent=oldText;}
+}
+$("resetMonthlyAttendanceBtn").addEventListener("click",resetMonthlyAttendance);
+
 $("loadAttendanceBtn").addEventListener("click",loadAttendanceForDate);
 $("saveAttendanceBtn").addEventListener("click",saveAttendance);
 $("attendanceDate").addEventListener("change",loadAttendanceForDate);
