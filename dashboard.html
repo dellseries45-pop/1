@@ -914,6 +914,8 @@ async function resetMonthlyAttendance(){
   if(!currentProfile || currentProfile.role!=="manager"){
     message("تصفير الحضور متاح للمدير فقط.","error");return;
   }
+  // Temporarily disabled: align endpoint without allowing any deletion until backend auth is verified.
+  message("ميزة تصفير الحضور موقوفة مؤقتًا حفاظًا على السجلات. لم يتم حذف أي بيانات.","info");return;
   const monthValue=$("attendanceExportMonth").value || ($("attendanceDate").value||todayISO()).slice(0,7);
   if(!/^\d{4}-\d{2}$/.test(monthValue)){message("اختر الشهر المطلوب أولًا.","error");return;}
   $("attendanceExportMonth").value=monthValue;
@@ -953,7 +955,7 @@ async function resetMonthlyAttendance(){
     });
     if(!confirmed){message("أُلغي التصفير. لم تُحذف أي سجلات.","info");return;}
     button.textContent="جارٍ حذف سجلات الشهر...";
-    const {data,error}=await db.functions.invoke("reset-attendance-month",{body:{month:monthValue}});
+    const {data,error}=await db.functions.invoke("reset-attendance-month-ts",{body:{month:monthValue}});
     if(error){
       let details=error.message||"تعذر الاتصال بوظيفة التصفير.";
       try{if(error.context&&typeof error.context.json==="function"){const body=await error.context.json();if(body?.error)details=body.error;}}catch(_){}
