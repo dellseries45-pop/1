@@ -96,6 +96,23 @@
     .group-loading{display:flex;align-items:center;justify-content:center;gap:9px;padding:17px;color:var(--muted);font-size:13px}.group-loading:before{content:"";width:14px;height:14px;border:2px solid #cde7e5;border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
     @media(max-width:600px){.groups-grid{grid-template-columns:1fr}.group-card-head{padding:17px 15px 13px}.group-card-actions{padding:0 15px 15px}.group-roster{padding:12px}}
 
+    /* Refined student management layout */
+    .student-management-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #edf2f7}
+    .student-management-title{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0;flex:1}
+    .student-management-title h2{margin:0;white-space:nowrap}
+    .student-management-title .sub{margin:0;font-size:inherit;line-height:1.7;color:var(--muted)}
+    .student-management-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:16px}
+    .student-management-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding:13px;border:1px solid #e1ebf2;border-radius:15px;background:linear-gradient(135deg,#f9fcfd,#f0f8f8)}
+    .student-management-tools select{min-width:220px;flex:1;border:1px solid #d7e4ec;border-radius:11px;padding:11px 13px;background:#fff;color:#173750;font:inherit;font-weight:700}
+    .student-management-tools input{min-width:180px;flex:1;border:1px solid #d7e4ec;border-radius:11px;padding:11px 13px;background:#fff;font:inherit}
+    .student-management-actions .btn{border:0;border-radius:12px;padding:11px 16px;font-weight:800;box-shadow:0 5px 12px #102b4610}
+    .student-management-actions #openAddStudentModal{background:linear-gradient(135deg,#0aa5a0,#08777f);color:#fff}
+    .student-management-actions #openManageStudentModal{background:linear-gradient(135deg,#edf5ff,#dceaff);color:#214e7b;border:1px solid #cbdff7}
+    .student-management-actions #openDeleteStudentModal{background:linear-gradient(135deg,#fff0f1,#ffe0e4);color:#a52c40;border:1px solid #f4c8d0}
+    .student-management-tools #searchStudents{background:linear-gradient(135deg,#173d5b,#245e78);color:#fff;border:0;border-radius:11px;padding:11px 18px;font-weight:800}
+    .student-list-panel .panel-head{display:none}
+    @media(max-width:650px){.student-management-title{align-items:flex-start;flex-direction:column;gap:4px}.student-management-actions{display:grid;grid-template-columns:1fr;margin-top:13px}.student-management-actions .btn{width:100%}.student-management-tools{display:grid;grid-template-columns:1fr}.student-management-tools select,.student-management-tools input{min-width:0;width:100%}}
+
     /* Responsive, content-aware table and form sizing refinement */
     .table-wrap{border:1px solid #e4ebf2;border-radius:14px;background:#fff;scrollbar-width:thin;scrollbar-color:#c8d7e3 transparent}
     .table-wrap table{margin:0}
@@ -190,11 +207,14 @@
     </section>
     <section id="studentsView" class="hidden">
       <div class="panel" id="addStudentPanel">
-        <div class="panel-head"><h2>إدارة الطلاب</h2><div class="actions"><button class="btn primary" id="openAddStudentModal" type="button">＋ تسجيل طالب جديد</button><button class="btn secondary" id="openManageStudentModal" type="button">✎ تعديل بيانات طالب</button><button class="btn danger" id="openDeleteStudentModal" type="button">حذف طالب</button></div></div>
-        <p class="sub">يمكنك تسجيل طالب جديد أو اختيار طالب لتعديل بياناته أو حذفه.</p>
+        <div class="student-management-head">
+          <div class="student-management-title"><h2>إدارة الطلاب</h2><p class="sub">يمكنك تسجيل طالب جديد أو اختيار طالب لتعديل بياناته أو حذفه.</p></div>
+        </div>
+        <div class="student-management-actions"><button class="btn primary" id="openAddStudentModal" type="button">＋ تسجيل طالب</button><button class="btn secondary" id="openManageStudentModal" type="button">✎ تعديل طالب</button><button class="btn danger" id="openDeleteStudentModal" type="button">حذف طالب</button></div>
+        <div class="student-management-tools"><select id="studentGroupFilter" aria-label="اختر الحلقة لعرض الطلاب"><option value="">اختر الحلقة لعرض الطلاب</option></select><input id="studentSearch" placeholder="ابحث باسم الطالب" aria-label="البحث باسم الطالب"><button class="btn secondary" id="searchStudents" type="button">⌕ بحث</button></div>
       </div>
-      <div class="panel"><div class="panel-head"><h2>الطلاب</h2><div class="tools"><select id="studentGroupFilter" aria-label="تصفية الطلاب حسب الحلقة"><option value="">كل الحلقات</option></select><input id="studentSearch" placeholder="بحث باسم الطالب"><button class="btn secondary" id="searchStudents">بحث</button></div></div>
-        <div class="table-wrap student-table-wrap"><table class="student-table"><colgroup><col class="col-student-name"><col class="col-student-gender"><col class="col-student-group"><col class="col-student-notes"></colgroup><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الملاحظات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+      <div class="panel student-list-panel">
+        <div class="table-wrap student-table-wrap"><table class="student-table"><colgroup><col class="col-student-name"><col class="col-student-gender"><col class="col-student-group"><col class="col-student-notes"></colgroup><thead><tr><th>اسم الطالب</th><th>الجنس</th><th>الحلقة</th><th>الملاحظات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="4" class="empty">اختر الحلقة من القائمة أعلاه لعرض بيانات الطلاب.</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
@@ -425,7 +445,7 @@ async function loadGroupOptions(){
   const select=$("newStudentGroup");
   const filter=$("studentGroupFilter");
   select.innerHTML='<option value="">بدون حلقة</option>';
-  filter.innerHTML='<option value="">كل الحلقات</option>';
+  filter.innerHTML='<option value="">اختر الحلقة لعرض الطلاب</option>';
   const {data,error}=await db.from("groups").select("id,name").order("name").limit(200);
   if(error){
     message("تعذر تحميل قائمة الحلقات. يمكنك إضافة الطالب بدون حلقة. التفاصيل: "+error.message,"error");
@@ -530,20 +550,26 @@ async function addStudent(event){
   }
 }
 async function loadStudents(){
-  const tbody=$("studentsRows");tbody.innerHTML='<tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr>';
+  const tbody=$("studentsRows");
+  const selectedGroup=$("studentGroupFilter").value;
+  if(!selectedGroup){
+    tbody.innerHTML='<tr><td colspan="4" class="empty">اختر الحلقة من القائمة أعلاه لعرض بيانات الطلاب.</td></tr>';
+    window.__studentRows={};
+    return;
+  }
+  tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ تحميل طلاب الحلقة...</td></tr>';
 let query = db.from("students")
     .select("id, full_name, group_id, created_by, notes, gender, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
-  const selectedGroup=$("studentGroupFilter").value;
-  if(selectedGroup) query=query.eq("group_id",selectedGroup);
+  query=query.eq("group_id",selectedGroup);
   const {data,error}=await query;
   if(error){
-    tbody.innerHTML='<tr><td colspan="5" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
     message("تعذر تحميل الطلاب: "+error.message,"error");
     return;
   }
-  if(!data?.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
 
   const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
   let groupNames={};
