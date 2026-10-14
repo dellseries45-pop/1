@@ -252,6 +252,8 @@
             <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
             <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
             <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
+            <div class="field" style="min-width:150px"><label for="attendanceExportMonth">شهر التصدير</label><input id="attendanceExportMonth" type="month" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;font-family:Arial,sans-serif"></div>
+            <button class="btn secondary" type="button" id="exportMonthlyAttendanceBtn">تصدير الحضور الشهري Excel</button>
           </div>
           <div class="attendance-help">اختر التاريخ، ثم حدّد لكل طالب: حاضر أو غائب أو غياب بعذر. لن تُحتسب أي رسوم تلقائيًا في هذه المرحلة؛ سنربط سجلات الحضور بالنظام المالي بعد اعتماد قواعد الرسوم.</div>
           <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:190px">الحالة</th><th>ملاحظة (اختياري)</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
@@ -865,9 +867,49 @@ async function saveAttendance(){
   if(error){message("تعذر حفظ الحضور: "+error.message,"error");return;}
   message("تم حفظ سجل الحضور والغياب بنجاح.","success");
 }
+async function exportMonthlyAttendance(){
+  if(!activeGroupId){message("افتح الحلقة أولًا قبل تصدير الحضور.","error");return;}
+  const monthValue=$("attendanceExportMonth").value || ($("attendanceDate").value||todayISO()).slice(0,7);
+  $("attendanceExportMonth").value=monthValue;
+  if(!/^\d{4}-\d{2}$/.test(monthValue)){message("اختر الشهر المطلوب للتصدير.","error");return;}
+  const startDate=monthValue+"-01";
+  const endDate=new Date(Number(monthValue.slice(0,4)),Number(monthValue.slice(5,7)),1).toISOString().slice(0,10);
+  const button=$("exportMonthlyAttendanceBtn");const oldText=button.textContent;button.disabled=true;button.textContent="جارٍ تجهيز الملف...";
+  try{
+    const {data,error}=await db.from("attendance_records").select("student_id,attendance_date,status,note").eq("group_id",activeGroupId).gte("attendance_date",startDate).lt("attendance_date",endDate).order("attendance_date",{ascending:true});
+    if(error)throw error;
+    const records=data||[];
+    if(!records.length){message("لا توجد سجلات حضور محفوظة لهذه الحلقة في الشهر المحدد.","error");return;}
+    const recordedDates=[...new Set(records.map(r=>r.attendance_date))].sort();
+    const students=[...(activeGroupStudents||[])].sort((a,b)=>(a.full_name||"").localeCompare(b.full_name||"","ar"));
+    const byKey=new Map(records.map(r=>[r.student_id+"|"+r.attendance_date,r]));
+    const statusLabel={present:"حاضر",absent:"غائب",excused:"غائب بعذر"};
+    const esc=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+    const rows=[];
+    rows.push(["اسم الطالب",...recordedDates.map(d=>d),"إجمالي حاضر","إجمالي غائب","إجمالي غياب بعذر","ملاحظات"].map(esc).join(","));
+    for(const student of students){
+      const studentRecords=recordedDates.map(date=>byKey.get(student.id+"|"+date));
+      const statuses=studentRecords.map(r=>r?statusLabel[r.status]||r.status:"");
+      const present=studentRecords.filter(r=>r?.status==="present").length;
+      const absent=studentRecords.filter(r=>r?.status==="absent").length;
+      const excused=studentRecords.filter(r=>r?.status==="excused").length;
+      const notes=studentRecords.map((r,i)=>r?.note?recordedDates[i]+": "+r.note:"").filter(Boolean).join(" | ");
+      rows.push([student.full_name||"طالب بلا اسم",...statuses,present,absent,excused,notes].map(esc).join(","));
+    }
+    const csv="\uFEFF"+rows.join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");
+    a.href=url;a.download="تقرير-حضور-"+(($("groupDetailName").textContent||"حلقة").trim().replace(/[\\/:*?"<>|]/g,"-")||"حلقة")+"-"+monthValue+".csv";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    message("تم تصدير السجلات المسجلة فقط. افتح الملف في Excel، ويمكنك حفظه بصيغة XLSX.","success");
+  }catch(err){message("تعذر تصدير الحضور الشهري: "+(err?.message||"خطأ غير معروف"),"error");}
+  finally{button.disabled=false;button.textContent=oldText;}
+}
 $("loadAttendanceBtn").addEventListener("click",loadAttendanceForDate);
 $("saveAttendanceBtn").addEventListener("click",saveAttendance);
 $("attendanceDate").addEventListener("change",loadAttendanceForDate);
+$("exportMonthlyAttendanceBtn").addEventListener("click",exportMonthlyAttendance);
+$("attendanceExportMonth").value=( $("attendanceDate").value || todayISO()).slice(0,7);
 
 $("groupsRows").addEventListener("click",async event=>{
   const button=event.target.closest("[data-view-group]");if(!button || button.disabled)return;
