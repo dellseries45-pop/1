@@ -407,6 +407,7 @@ function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, ch=>({
 function showView(view){
   ["overview","students","teachers","groups","attendanceReports","statistics"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
   document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
+  $("pageTitle").style.color = "#ffffff";
   $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"الحلقات",attendanceReports:"تقارير الحضور",statistics:"الإحصائيات"})[view];
   if(view==="attendanceReports") loadAttendanceReportOptions();
 }
