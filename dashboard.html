@@ -745,7 +745,22 @@ $("teachersRows").addEventListener("click",async event=>{
   toggle.disabled=true;
   try{
    const {data,error}=await db.functions.invoke("set-teacher-active",{body:{teacher_id:id,is_active:!currentlyActive}});
-   if(error)throw error;
+   if(error){
+    console.error("set-teacher-active error:",error);
+    let details=error.message||String(error);
+
+    if(error.context){
+     try{
+      const responseText=await error.context.text();
+      if(responseText)details+=" | تفاصيل الخادم: "+responseText;
+     }catch(readError){
+      console.warn("تعذر قراءة تفاصيل استجابة الخادم:",readError);
+     }
+    }
+
+    throw new Error(details);
+   }
+
    if(data?.error)throw new Error(data.error);
    message(data?.message||(currentlyActive?"تم تعطيل حساب المعلم مع الاحتفاظ بسجلاته.":"تم تفعيل حساب المعلم."),"success");
    await loadTeachers();
