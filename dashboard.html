@@ -131,14 +131,19 @@
     td{padding:12px 14px;line-height:1.6;color:#304a61}
     tbody tr:last-child td{border-bottom:0}
     .student-table{table-layout:fixed;min-width:850px}
-    .student-table{min-width:1100px}
-    .student-table .col-student-name{width:18%}
-    .student-table .col-student-birth{width:12%}
-    .student-table .col-student-residence{width:18%}
-    .student-table .col-student-phone{width:14%}
-    .student-table .col-student-gender{width:10%}
-    .student-table .col-student-group{width:14%}
-    .student-table .col-student-notes{width:14%}
+    .student-table{min-width:1190px}
+    .student-table .col-student-name{width:16%}
+    .student-table .col-student-birth{width:9%}
+    .student-table .col-student-residence{width:14%}
+    .student-table .col-student-phone{width:11%}
+    .student-table .col-student-gender{width:7%}
+    .student-table .col-student-group{width:12%}
+    .student-table .col-student-group-type{width:10%}
+    .student-table .col-student-registration-date{width:10%}
+    .student-table .col-student-notes{width:11%}
+    .student-table th{white-space:normal;overflow-wrap:anywhere;line-height:1.45;vertical-align:middle}
+    .student-table td{vertical-align:top}
+    .student-table td:nth-child(7),.student-table td:nth-child(8){overflow-wrap:anywhere;white-space:normal}
     .student-table th:nth-child(2),.student-table td:nth-child(2){text-align:center}
     .student-table td:nth-child(2){white-space:nowrap}
     .student-table td:nth-child(1){font-weight:700;color:var(--navy);overflow-wrap:anywhere}
@@ -153,8 +158,8 @@
     .tools input,.tools select{min-height:40px;border-radius:10px}
     .panel-head .tools{align-items:center}
     .empty{padding:30px 16px!important}
-    @media(max-width:850px){.student-table{min-width:1100px}}
-    @media(max-width:600px){.panel{padding:14px}.panel-head{align-items:stretch}.panel-head .tools{display:grid;grid-template-columns:1fr 1fr;width:100%}.panel-head .tools input{grid-column:1/-1;width:100%}.panel-head .tools select,.panel-head .tools button{width:100%;min-width:0}.form-grid{gap:12px}.student-table{min-width:760px}th,td{padding:11px 10px}}
+    @media(max-width:850px){.student-table{min-width:1190px}}
+    @media(max-width:600px){.panel{padding:14px}.panel-head{align-items:stretch}.panel-head .tools{display:grid;grid-template-columns:1fr 1fr;width:100%}.panel-head .tools input{grid-column:1/-1;width:100%}.panel-head .tools select,.panel-head .tools button{width:100%;min-width:0}.form-grid{gap:12px}.student-table{min-width:1190px}th,td{padding:11px 10px}}
 
     /* Full-page group detail view, ready for future enrollment and finance fields */
     .group-detail-hero{position:relative;overflow:hidden;margin-bottom:12px;padding:14px 18px;border-radius:16px;color:#fff;background:radial-gradient(circle at 8% 15%,#ffffff20,transparent 26%),linear-gradient(125deg,#102b46 0%,#155367 66%,#078f91 100%);box-shadow:0 18px 42px rgba(16,43,70,.16)}
@@ -259,7 +264,7 @@
         <div class="student-management-tools"><select id="studentGroupFilter" aria-label="اختر الحلقة لعرض الطلاب"><option value="">اختر الحلقة لعرض الطلاب</option></select><input id="studentSearch" placeholder="ابحث باسم الطالب" aria-label="البحث باسم الطالب"><button class="btn secondary" id="searchStudents" type="button">⌕ بحث</button></div>
       </div>
       <div class="panel student-list-panel">
-        <div class="table-wrap student-table-wrap"><table class="student-table"><colgroup><col class="col-student-name"><col class="col-student-birth"><col class="col-student-residence"><col class="col-student-phone"><col class="col-student-gender"><col class="col-student-group"><col><col><col class="col-student-notes"></colgroup><thead><tr><th>اسم الطالب</th><th>المواليد</th><th>محل الإقامة</th><th>رقم الهاتف</th><th>الجنس</th><th>الحلقة</th><th>نوع الحلقة</th><th>تاريخ التسجيل</th><th>الملاحظات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="9" class="empty">اختر الحلقة من القائمة أعلاه لعرض بيانات الطلاب.</td></tr></tbody></table></div>
+        <div class="table-wrap student-table-wrap"><table class="student-table"><colgroup><col class="col-student-name"><col class="col-student-birth"><col class="col-student-residence"><col class="col-student-phone"><col class="col-student-gender"><col class="col-student-group"><col class="col-student-group-type"><col class="col-student-registration-date"><col class="col-student-notes"></colgroup><thead><tr><th>اسم الطالب</th><th>المواليد</th><th>محل الإقامة</th><th>رقم الهاتف</th><th>الجنس</th><th>الحلقة</th><th>نوع الحلقة</th><th>تاريخ التسجيل</th><th>الملاحظات</th></tr></thead><tbody id="studentsRows"><tr><td colspan="9" class="empty">اختر الحلقة من القائمة أعلاه لعرض بيانات الطلاب.</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="teachersView" class="hidden">
