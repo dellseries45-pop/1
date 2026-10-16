@@ -187,7 +187,7 @@
       <button class="active" data-view="overview">نظرة عامة</button>
       <button data-view="students">الطلاب</button>
       <button data-view="teachers">المعلمون</button>
-      <button data-view="groups">الحلقات</button>
+      <button data-view="groups" id="groupsNav">الحلقات</button>
       <button data-view="attendanceReports" id="attendanceReportsNav">تقارير الحضور</button>
       <button data-view="statistics" id="statisticsNav">الإحصائيات</button>
       <button class="btn danger sidebar-logout" id="logoutBtn">تسجيل الخروج</button>
@@ -196,7 +196,7 @@
   </aside>
   <main>
     <header class="topbar">
-      <div><h1 id="pageTitle">نظرة عامة</h1><p class="sub" id="welcome">جارٍ التحقق من الجلسة...</p></div>
+      <div><h1 id="pageTitle" style="display:none">نظرة عامة</h1><p class="sub" id="welcome">جارٍ التحقق من الجلسة...</p></div>
       
     </header>
     <div id="notice" class="notice" role="status" aria-live="polite"><span id="noticeText" class="notice-content"></span><button type="button" id="closeNotice" class="notice-close" aria-label="إغلاق الرسالة" title="إغلاق">×</button></div>
@@ -247,7 +247,7 @@
           <div class="table-wrap"><table class="group-students-table"><thead><tr><th class="group-num-col">#</th><th>اسم الطالب</th></tr></thead><tbody id="groupStudentsRows"><tr><td colspan="2" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
         </div>
         <div class="panel attendance-panel" id="attendancePanel">
-          <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب حسب تاريخ الحلقة، لتسهيل احتساب الرسوم لاحقًا.</p></div></div>
+          <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب ثم حفظ الحضور</p></div></div>
           <div class="attendance-toolbar">
             <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
             <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
@@ -257,7 +257,8 @@
             <button class="btn danger hidden" type="button" id="resetMonthlyAttendanceBtn">تصفير حضور الشهر المحدد</button>
           </div>
           <div class="attendance-help">اختر التاريخ، ثم حدّد لكل طالب: حاضر أو غائب أو غياب بعذر. لن تُحتسب أي رسوم تلقائيًا في هذه المرحلة؛ سنربط سجلات الحضور بالنظام المالي بعد اعتماد قواعد الرسوم.</div>
-          <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:190px">الحالة</th><th>ملاحظة (اختياري)</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
+          <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:190px">الحالة</th><th>عنوان الدرس</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
+          <div class="panel" id="deleteGroupSection" style="margin-top:20px;border:1px solid #f0c7cb"><div class="panel-head"><div><h2>حذف الحلقة</h2><p class="sub">هذا الإجراء نهائي، ولن يُسمح بالحذف إذا كانت الحلقة مرتبطة بطلاب أو سجلات حضور.</p></div></div><button class="btn danger" type="button" id="deleteCurrentGroupBtn">حذف هذه الحلقة</button></div>
         </div>
       </section>
     </section>
@@ -276,7 +277,7 @@
           <div class="field"><label for="reportStudentSearch">اسم الطالب (اختياري)</label><input id="reportStudentSearch" placeholder="ابحث باسم الطالب"></div>
           <div class="field"><label for="reportStatusFilter">حالة الحضور</label><select id="reportStatusFilter"><option value="">كل الحالات</option><option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option></select></div>
         </div>
-        <div class="actions" style="margin-top:14px"><button class="btn primary" type="button" id="runAttendanceReport">عرض التقرير</button><button class="btn secondary" type="button" id="resetAttendanceReport">إعادة ضبط</button></div>
+        <div class="actions" style="margin-top:14px"><button class="btn primary" type="button" id="runAttendanceReport">عرض التقرير اليومي</button><button class="btn secondary" type="button" id="resetAttendanceReport">إعادة ضبط</button></div>
       </div>
       <div class="panel">
         <div class="panel-head"><h2>نتائج التقرير</h2><span class="group-count" id="attendanceReportRowsCount">0 سجل</span></div>
@@ -407,7 +408,8 @@ function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, ch=>({
 function showView(view){
   ["overview","students","teachers","groups","attendanceReports","statistics"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
   document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
-  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:"الحلقات",attendanceReports:"تقارير الحضور",statistics:"الإحصائيات"})[view];
+  $("pageTitle").textContent=({overview:"نظرة عامة",students:"الطلاب",teachers:"المعلمون",groups:(currentProfile?.role==="teacher"?"حلقاتي":"الحلقات"),attendanceReports:"تقارير الحضور",statistics:"الإحصائيات"})[view];
+  const groupsNav=$("groupsNav");if(groupsNav)groupsNav.textContent=currentProfile?.role==="teacher"?"حلقاتي":"الحلقات";
   if(view==="attendanceReports") loadAttendanceReportOptions();
 }
 document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
@@ -487,7 +489,14 @@ async function loadAttendanceReportOptions(){
 function reportStatusLabel(status){
   return status==="present"?"حاضر":status==="absent"?"غائب":status==="excused"?"غائب بعذر":status||"غير محدد";
 }
+const arabicLevantMonths=["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+function formatLevantineDate(value){
+  if(!value||!/^\d{4}-\d{2}-\d{2}$/.test(value))return value||"—";
+  const [year,month,day]=value.split("-");
+  return `${Number(day)} ${arabicLevantMonths[Number(month)-1]||month} ${year}`;
+}
 async function loadAttendanceReport(){
+  await loadAttendanceReportOptions();
   const start=$("reportStartDate").value, end=$("reportEndDate").value;
   if(start&&end&&start>end){message("تاريخ البداية يجب أن يكون قبل تاريخ النهاية.","error");return;}
   const tbody=$("attendanceReportRows");tbody.innerHTML='<tr><td colspan="5" class="empty">جارٍ إعداد التقرير...</td></tr>';
@@ -514,7 +523,7 @@ async function loadAttendanceReport(){
   $("reportAbsentCount").textContent=filtered.filter(r=>r.status==="absent").length;
   $("reportExcusedCount").textContent=filtered.filter(r=>r.status==="excused").length;
   $("attendanceReportRowsCount").textContent=`${filtered.length} سجل`;
-  tbody.innerHTML=filtered.length?filtered.map(r=>`<tr><td>${escapeHtml(r.attendance_date||"—")}</td><td>${escapeHtml(studentNames[r.student_id]||"طالب غير متاح")}</td><td>${escapeHtml(groupNames[r.group_id]||"حلقة غير متاحة")}</td><td><span class="attendance-status ${escapeHtml(r.status)}">${escapeHtml(reportStatusLabel(r.status))}</span></td><td>${escapeHtml(r.note||"—")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">لا توجد سجلات تطابق اسم الطالب.</td></tr>';
+  tbody.innerHTML=filtered.length?filtered.map(r=>`<tr><td>${escapeHtml(formatLevantineDate(r.attendance_date))}</td><td>${escapeHtml(studentNames[r.student_id]||"طالب غير متاح")}</td><td>${escapeHtml(groupNames[r.group_id]||"حلقة غير متاحة")}</td><td><span class="attendance-status ${escapeHtml(r.status)}">${escapeHtml(reportStatusLabel(r.status))}</span></td><td>${escapeHtml(r.note||"—")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">لا توجد سجلات تطابق اسم الطالب.</td></tr>';
 }
 $("runAttendanceReport").addEventListener("click",loadAttendanceReport);
 $("resetAttendanceReport").addEventListener("click",()=>{
@@ -754,7 +763,7 @@ $("teachersRows").addEventListener("click",async event=>{
  catch(err){message("لم يكتمل الحذف النهائي. تأكد من نشر Edge Function باسم delete-teacher وإعداد صلاحياتها. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");del.disabled=false;}
 });
 
-$("groupsRows").addEventListener("click",async event=>{
+document.addEventListener("click",async event=>{
  const btn=event.target.closest("[data-delete-group]");if(!btn)return;
  if(!currentProfile||!["manager","teacher"].includes(currentProfile.role)){message("حذف الحلقات متاح للمدير والمعلم فقط.","error");return;}
  const id=btn.dataset.deleteGroup,name=btn.dataset.groupName||"هذه الحلقة";
@@ -818,10 +827,9 @@ async function loadGroups(){
   if(!groups.length){container.innerHTML='<div class="empty">لا توجد حلقات متاحة لهذا الحساب حتى الآن.</div>';return;}
   container.innerHTML=groups.map((row,index)=>{
     const title=row.name||"حلقة بدون اسم";
-    const deleteGroupAction=(currentProfile && ["manager","teacher"].includes(currentProfile.role))?`<button class="btn danger delete-group-btn" type="button" data-delete-group="${escapeHtml(row.id)}" data-group-name="${escapeHtml(title)}">حذف الحلقة</button>`:"";
     return `<article class="group-card" data-group-card="${row.id}">
       <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>حلقة تعليمية</span><span aria-hidden="true">•</span><span>رقم ${index+1}</span></div></div></div>
-      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">قائمة الطلاب</span><div class="actions">${deleteGroupAction}<button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
+      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">قائمة الطلاب</span><div class="actions"><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
   }).join("");
@@ -836,10 +844,14 @@ const groupsListPanel = $("groupsListPanel");
 const createGroupPanel = $("createGroupPanel");
 const groupDetailView = $("groupDetailView");
 function showGroupsList(){
+  if(currentProfile?.role==="teacher"){
+    const nav=$("groupsNav");if(nav)nav.textContent="حلقاتي";
+    const back=$("backToGroups");if(back)back.textContent="← حلقاتي";
+  }
   if(groupDetailView) groupDetailView.classList.add("hidden");
   if(groupsListPanel) groupsListPanel.classList.remove("hidden");
   if(currentProfile?.role==="manager" && createGroupPanel) createGroupPanel.classList.remove("hidden");
-  const title=$("pageTitle");if(title)title.textContent="الحلقات";
+  const title=$("pageTitle");if(title)title.textContent=currentProfile?.role==="teacher"?"حلقاتي":"الحلقات";
 }
 async function openGroupDetail(groupId, groupName){
   activeGroupId=groupId;
@@ -855,6 +867,7 @@ async function openGroupDetail(groupId, groupName){
   $("groupStudentsRows").innerHTML='<tr><td colspan="2" class="empty">جارٍ تحميل أسماء الطلاب...</td></tr>';
   $("groupStudentSearch").value="";
   const title=$("pageTitle");if(title)title.textContent=activeGroupName;
+  const deleteButton=$("deleteCurrentGroupBtn");if(deleteButton){deleteButton.dataset.deleteGroup=groupId;deleteButton.dataset.groupName=activeGroupName;deleteButton.style.display=(currentProfile&&["manager","teacher"].includes(currentProfile.role))?"":"none";}
   const {data,error}=await db.from("students").select("id,full_name").eq("group_id",groupId).order("full_name").limit(500);
   if(error){activeGroupStudents=[];$("groupDetailStudentCount").textContent="—";$("groupStudentsRows").innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل الطلاب. تحقق من صلاحيات عرض الطلاب في هذه الحلقة.</td></tr>';message("تعذر تحميل طلاب الحلقة: "+error.message,"error");return;}
   activeGroupStudents=data||[];
