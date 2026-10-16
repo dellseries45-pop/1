@@ -151,7 +151,7 @@
     .group-detail-title-row{display:flex;align-items:center;gap:12px}.group-detail-emblem{width:48px;height:48px;display:block;object-fit:cover;border-radius:50%;background:#fff;border:2px solid #dfb75f;box-shadow:0 5px 14px #071a2c25;flex-shrink:0}
     .group-detail-eyebrow{margin:0 0 5px;color:#d8ecee;font-size:12px;font-weight:700}.group-detail-title-row h2{margin:0;color:#fff;font-size:clamp(20px,2.3vw,26px);overflow-wrap:anywhere}.group-detail-title-row p:last-child{margin:3px 0 0;color:#e1edf1;font-size:13px;line-height:1.5}
     .group-detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.group-detail-metrics>div{padding:8px 12px;border:1px solid #ffffff24;border-radius:14px;background:#ffffff12;backdrop-filter:blur(6px);min-width:0}.group-detail-metrics span{display:block;color:#d4e5e9;font-size:12px}.group-detail-metrics strong{display:block;margin-top:2px;color:#fff;font-size:15px;overflow-wrap:anywhere}
-    .group-detail-panel{margin-bottom:12px}.group-student-search{min-height:40px;width:min(280px,100%);padding:9px 12px;border:1px solid var(--border);border-radius:11px;background:#fff}.group-students-table{min-width:0;table-layout:fixed}.group-students-table th,.group-students-table td{padding:9px 12px}.group-students-table .group-num-col{width:72px;text-align:center}.group-students-table td:first-child{text-align:center;color:var(--teal);font-weight:800}.group-students-table td:nth-child(2){font-weight:700;color:var(--navy);overflow-wrap:anywhere}.group-student-row-number{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#eaf7f6;color:#08777f}
+    .group-detail-panel{margin-bottom:12px}.group-student-search{min-height:40px;width:min(280px,100%);padding:9px 12px;border:1px solid var(--border);border-radius:11px;background:#fff}.group-students-table{min-width:760px;table-layout:fixed}.group-students-table th,.group-students-table td{padding:9px 12px}.group-students-table .group-num-col{width:72px;text-align:center}.group-students-table td:first-child{text-align:center;color:var(--teal);font-weight:800}.group-students-table td:nth-child(2){font-weight:700;color:var(--navy);overflow-wrap:anywhere}.group-student-row-number{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#eaf7f6;color:#08777f}
     .attendance-panel{margin-top:18px}.attendance-toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.attendance-toolbar .field{min-width:190px;flex:1}.attendance-table{min-width:640px}.attendance-table select{min-width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#fff}.attendance-status{font-weight:700}.attendance-status.present{color:#087f5b}.attendance-status.absent{color:#c0392b}.attendance-status.excused{color:#9a6700}.attendance-help{padding:12px 14px;border-radius:12px;background:#eef8f7;color:#315b61;font-size:13px;line-height:1.7;margin-top:12px}
     @media(max-width:600px){.group-detail-hero{padding:12px;border-radius:14px}.group-detail-metrics{grid-template-columns:1fr 1fr}.group-detail-metrics>div:first-child{grid-column:1/-1}.group-detail-title-row{align-items:flex-start}.group-detail-emblem{width:40px;height:40px;border-radius:50%}.group-detail-panel .panel-head{align-items:stretch}.group-student-search{width:100%}.group-students-table th,.group-students-table td{padding:12px 10px}}
 
@@ -244,10 +244,10 @@
       <section id="groupDetailView" class="hidden" aria-live="polite">
         <div class="hidden" aria-hidden="true"><span id="groupDetailSubtitle"></span><span id="groupDetailStudentCount"></span></div>
         <div class="panel group-detail-panel"><div class="panel-head"><div><button type="button" class="btn secondary group-back-btn" id="backToGroups">← الحلقات</button><h2 id="groupDetailName">طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل والبيانات المالية في المرحلة التالية.</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
-          <div class="table-wrap"><table class="group-students-table"><thead><tr><th class="group-num-col">#</th><th>اسم الطالب</th></tr></thead><tbody id="groupStudentsRows"><tr><td colspan="2" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
+          <div class="table-wrap"><table class="group-students-table"><thead><tr><th class="group-num-col">#</th><th>اسم الطالب</th><th>المواليد</th><th>محل الإقامة</th><th>رقم الهاتف</th></tr></thead><tbody id="groupStudentsRows"><tr><td colspan="5" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
         </div>
         <div class="panel attendance-panel" id="attendancePanel">
-          <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب ثم حفظ الحضور بعد الانتهاء من الدرس  </p></div></div>
+          <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب ثم حفظ الحضور</p></div></div>
           <div class="attendance-toolbar">
             <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
             <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
@@ -306,6 +306,9 @@
       <div class="modal-body"><div class="modal-grid">
         <div class="modal-field"><label for="newStudentName">اسم الطالب *</label><input id="newStudentName" name="full_name" required maxlength="150" placeholder="اكتب اسم الطالب"></div>
         <div class="modal-field"><label for="newStudentGender">الجنس</label><select id="newStudentGender" name="gender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+        <div class="modal-field"><label for="newStudentBirthDate">المواليد</label><input id="newStudentBirthDate" type="date" name="birth_date"></div>
+        <div class="modal-field"><label for="newStudentResidence">محل الإقامة</label><input id="newStudentResidence" name="residence" maxlength="250" placeholder="أدخل محل الإقامة"></div>
+        <div class="modal-field"><label for="newStudentPhone">رقم الهاتف</label><input id="newStudentPhone" name="phone" type="tel" maxlength="30" inputmode="tel" placeholder="أدخل رقم الهاتف"></div>
         <div class="modal-field"><label for="newStudentGroup">الحلقة (اختياري)</label><select id="newStudentGroup" name="group_id"><option value="">بدون حلقة</option></select><small class="modal-hint">اختر الحلقة المناسبة، أو اترك «بدون حلقة».</small></div>
         <div class="modal-field"><label for="newStudentNotes">ملاحظات (اختياري)</label><textarea id="newStudentNotes" name="notes" rows="2" placeholder="ملاحظات عن الطالب"></textarea></div>
       </div></div>
@@ -355,6 +358,9 @@
         <div class="modal-grid">
           <div class="modal-field"><label for="editStudentName">اسم الطالب *</label><input id="editStudentName" maxlength="150" required autocomplete="off" placeholder="اكتب اسم الطالب"></div>
           <div class="modal-field"><label for="editStudentGender">الجنس</label><select id="editStudentGender"><option value="">غير محدد</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+          <div class="modal-field"><label for="editStudentBirthDate">المواليد</label><input id="editStudentBirthDate" type="date"></div>
+          <div class="modal-field"><label for="editStudentResidence">محل الإقامة</label><input id="editStudentResidence" maxlength="250" placeholder="أدخل محل الإقامة"></div>
+          <div class="modal-field"><label for="editStudentPhone">رقم الهاتف</label><input id="editStudentPhone" type="tel" maxlength="30" inputmode="tel" placeholder="أدخل رقم الهاتف"></div>
           <div class="modal-field">
             <label for="editStudentGroup">الحلقة</label>
             <div class="current-group"><span>الحلقة الحالية:</span><strong id="currentStudentGroup">—</strong></div>
@@ -546,6 +552,9 @@ async function addStudent(event){
     full_name:fullName,
     group_id:groupValue||null,
     gender:$("newStudentGender").value||null,
+    birth_date:$("newStudentBirthDate").value||null,
+    residence:$("newStudentResidence").value.trim()||null,
+    phone:$("newStudentPhone").value.trim()||null,
     created_by:currentProfile.id,
     notes:notes||null
   };
@@ -577,7 +586,7 @@ async function loadStudents(){
   }
   tbody.innerHTML='<tr><td colspan="4" class="empty">جارٍ تحميل الطلاب...</td></tr>';
 let query = db.from("students")
-    .select("id, full_name, group_id, created_by, notes, gender, created_at, updated_at")
+    .select("id, full_name, group_id, created_by, notes, gender, birth_date, residence, phone, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
   if(selectedGroup!=="all") query=query.eq("group_id",selectedGroup);
@@ -614,13 +623,13 @@ let query = db.from("students")
 let editingStudentOriginal=null,studentEditSaving=false;
 function setEditStatus(text,type="info"){const el=$("studentEditStatus");el.textContent=text;el.className="modal-status show "+type;}
 function setSaveState(text,loading=false){$("studentSaveState").innerHTML=loading?'<span class="spinner" aria-hidden="true"></span><span>'+escapeHtml(text)+'</span>':escapeHtml(text);}
-function editFormChanged(){return !!editingStudentOriginal&&($("editStudentName").value.trim()!==editingStudentOriginal.full_name||($("editStudentGroup").value||"")!==(editingStudentOriginal.group_id||"")||$("editStudentNotes").value.trim()!==(editingStudentOriginal.notes||"")||$("editStudentGender").value!==(editingStudentOriginal.gender||""));}
+function editFormChanged(){return !!editingStudentOriginal&&($("editStudentName").value.trim()!==editingStudentOriginal.full_name||($("editStudentGroup").value||"")!==(editingStudentOriginal.group_id||"")||$("editStudentNotes").value.trim()!==(editingStudentOriginal.notes||"")||$("editStudentGender").value!==(editingStudentOriginal.gender||"")||$("editStudentBirthDate").value!==(editingStudentOriginal.birth_date||"")||$("editStudentResidence").value.trim()!==(editingStudentOriginal.residence||"")||$("editStudentPhone").value.trim()!==(editingStudentOriginal.phone||""));}
 async function closeStudentEdit(force=false){if(studentEditSaving)return;if(!force&&editFormChanged()&&!await confirmDialog({title:"تغييرات غير محفوظة",text:"هل تريد إغلاق نافذة التعديل وفقدان التغييرات التي أجريتها؟",confirmText:"إغلاق دون حفظ",danger:true}))return;$("studentEditBackdrop").classList.add("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");editingStudentOriginal=null;}
 function openStudentEdit(row,groupNames){
  const ownUnassigned=!row.group_id&&row.created_by===currentProfile.id,assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile.id;
  if(currentProfile.role!=="manager"&&!(row.created_by===currentProfile.id&&(ownUnassigned||assigned))){message("يمكنك تعديل الطلاب الذين أدخلت بياناتهم فقط، ضمن نطاق حلقاتك.","error");return;}
- editingStudentOriginal={id:row.id,full_name:row.full_name||"",group_id:row.group_id||"",notes:row.notes||"",gender:row.gender||""};
- $("editingStudentId").value=row.id;$("editStudentName").value=row.full_name||"";$("editStudentNotes").value=row.notes||"";$("editStudentGender").value=row.gender||"";
+ editingStudentOriginal={id:row.id,full_name:row.full_name||"",group_id:row.group_id||"",notes:row.notes||"",gender:row.gender||"",birth_date:row.birth_date||"",residence:row.residence||"",phone:row.phone||""};
+ $("editingStudentId").value=row.id;$("editStudentName").value=row.full_name||"";$("editStudentNotes").value=row.notes||"";$("editStudentGender").value=row.gender||"";$("editStudentBirthDate").value=row.birth_date||"";$("editStudentResidence").value=row.residence||"";$("editStudentPhone").value=row.phone||"";
  $("currentStudentGroup").textContent=row.group_id?(groupNames[row.group_id]||"حلقة غير متاحة"):"بدون حلقة";
  const sel=$("editStudentGroup");sel.innerHTML='<option value="">بدون حلقة</option>';
  [...$("newStudentGroup").options].filter(o=>o.value).forEach(o=>{const op=document.createElement("option");op.value=o.value;op.textContent=o.textContent;sel.appendChild(op);});
@@ -681,16 +690,16 @@ $("studentEditForm").addEventListener("submit",async e=>{
  const name=$("editStudentName").value.trim();if(!name){setEditStatus("يرجى إدخال اسم الطالب.","error");$("editStudentName").focus();return;}if(name.length>150){setEditStatus("اسم الطالب يجب ألا يتجاوز 150 حرفًا.","error");return;}
  const group=$("editStudentGroup").value||null;
  if(currentProfile.role==="teacher"&&group&&![...$("newStudentGroup").options].some(o=>o.value===group)){setEditStatus("لا يمكنك نقل الطالب إلى حلقة غير مسندة إليك.","error");return;}
- studentEditSaving=true;["saveStudentChanges","cancelStudentModal","closeStudentModal","editStudentName","editStudentGroup","editStudentNotes","editStudentGender"].forEach(id=>$(id).disabled=true);
+ studentEditSaving=true;["saveStudentChanges","cancelStudentModal","closeStudentModal","editStudentName","editStudentGroup","editStudentNotes","editStudentGender","editStudentBirthDate","editStudentResidence","editStudentPhone"].forEach(id=>$(id).disabled=true);
  setSaveState("جارٍ حفظ التعديلات...",true);setEditStatus("جارٍ حفظ بيانات الطالب...");
  try{
-  const updates={full_name:name,group_id:group,gender:$("editStudentGender").value||null,notes:$("editStudentNotes").value.trim()||null};
+  const updates={full_name:name,group_id:group,gender:$("editStudentGender").value||null,birth_date:$("editStudentBirthDate").value||null,residence:$("editStudentResidence").value.trim()||null,phone:$("editStudentPhone").value.trim()||null,notes:$("editStudentNotes").value.trim()||null};
   const {data,error}=await db.from("students").update(updates).eq("id",editingStudentOriginal.id).select("id");
   if(error)throw error;if(!data?.length)throw new Error("لم يتم تحديث أي سجل؛ تحقق من صلاحيات الحساب.");
   setEditStatus("تم حفظ تعديلات الطالب بنجاح.","info");setSaveState("تم الحفظ بنجاح.");editingStudentOriginal={...editingStudentOriginal,...updates,notes:updates.notes||""};
   await loadStudents();setTimeout(()=>closeStudentEdit(true),700);
  }catch(err){setEditStatus("تعذر حفظ التعديلات. تحقق من صلاحياتك والمجموعة المختارة. "+(err?.message||""),"error");setSaveState("لم تُحفظ التغييرات.");}
- finally{studentEditSaving=false;["saveStudentChanges","cancelStudentModal","closeStudentModal","editStudentName","editStudentGroup","editStudentNotes","editStudentGender"].forEach(id=>$(id).disabled=false);}
+ finally{studentEditSaving=false;["saveStudentChanges","cancelStudentModal","closeStudentModal","editStudentName","editStudentGroup","editStudentNotes","editStudentGender","editStudentBirthDate","editStudentResidence","editStudentPhone"].forEach(id=>$(id).disabled=false);}
 });
 
 async function createTeacher(event){
@@ -851,7 +860,7 @@ function showGroupsList(){
   if(groupDetailView) groupDetailView.classList.add("hidden");
   if(groupsListPanel) groupsListPanel.classList.remove("hidden");
   if(currentProfile?.role==="manager" && createGroupPanel) createGroupPanel.classList.remove("hidden");
-  const title=$("pageTitle");if(title)title.textContent=currentProfile?.role==="teacher"?"حلقاتي":"غيرت هنا الحلقات";
+  const title=$("pageTitle");if(title)title.textContent=currentProfile?.role==="teacher"?"حلقاتي":"الحلقات";
 }
 async function openGroupDetail(groupId, groupName){
   activeGroupId=groupId;
@@ -864,12 +873,12 @@ async function openGroupDetail(groupId, groupName){
   $("groupDetailName").textContent=activeGroupName;
   $("groupDetailSubtitle").textContent="قائمة الطلاب المسجلين في هذه الحلقة";
   $("groupDetailStudentCount").textContent="…";
-  $("groupStudentsRows").innerHTML='<tr><td colspan="2" class="empty">جارٍ تحميل أسماء الطلاب...</td></tr>';
+  $("groupStudentsRows").innerHTML='<tr><td colspan="5" class="empty">جارٍ تحميل أسماء الطلاب...</td></tr>';
   $("groupStudentSearch").value="";
   const title=$("pageTitle");if(title)title.textContent=activeGroupName;
   const deleteButton=$("deleteCurrentGroupBtn");if(deleteButton){deleteButton.dataset.deleteGroup=groupId;deleteButton.dataset.groupName=activeGroupName;deleteButton.style.display=(currentProfile&&["manager","teacher"].includes(currentProfile.role))?"":"none";}
-  const {data,error}=await db.from("students").select("id,full_name").eq("group_id",groupId).order("full_name").limit(500);
-  if(error){activeGroupStudents=[];$("groupDetailStudentCount").textContent="—";$("groupStudentsRows").innerHTML='<tr><td colspan="2" class="empty">تعذر تحميل الطلاب. تحقق من صلاحيات عرض الطلاب في هذه الحلقة.</td></tr>';message("تعذر تحميل طلاب الحلقة: "+error.message,"error");return;}
+  const {data,error}=await db.from("students").select("id,full_name,birth_date,residence,phone").eq("group_id",groupId).order("full_name").limit(500);
+  if(error){activeGroupStudents=[];$("groupDetailStudentCount").textContent="—";$("groupStudentsRows").innerHTML='<tr><td colspan="5" class="empty">تعذر تحميل الطلاب. تحقق من صلاحيات عرض الطلاب في هذه الحلقة.</td></tr>';message("تعذر تحميل طلاب الحلقة: "+error.message,"error");return;}
   activeGroupStudents=data||[];
   $("groupDetailStudentCount").textContent=activeGroupStudents.length;
   renderGroupStudents(activeGroupStudents);
@@ -878,8 +887,8 @@ async function openGroupDetail(groupId, groupName){
 }
 function renderGroupStudents(students){
   const tbody=$("groupStudentsRows");
-  if(!students.length){tbody.innerHTML='<tr><td colspan="2" class="empty">لا يوجد طلاب يطابقون البحث في هذه الحلقة.</td></tr>';return;}
-  tbody.innerHTML=students.map((student,index)=>`<tr><td><span class="group-student-row-number">${index+1}</span></td><td>${escapeHtml(student.full_name||"طالب بلا اسم")}</td></tr>`).join("");
+  if(!students.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا يوجد طلاب يطابقون البحث في هذه الحلقة.</td></tr>';return;}
+  tbody.innerHTML=students.map((student,index)=>`<tr><td><span class="group-student-row-number">${index+1}</span></td><td>${escapeHtml(student.full_name||"طالب بلا اسم")}</td><td>${escapeHtml(student.birth_date||"—")}</td><td>${escapeHtml(student.residence||"—")}</td><td>${escapeHtml(student.phone||"—")}</td></tr>`).join("");
 }
 function renderAttendanceRows(){
   const tbody=$("attendanceRows");
