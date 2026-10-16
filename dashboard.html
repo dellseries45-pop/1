@@ -369,10 +369,11 @@
 
 <div id="createGroupBackdrop" class="modal-backdrop hidden" aria-hidden="true">
   <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="createGroupModalTitle">
-    <header class="modal-head"><div><h2 id="createGroupModalTitle">إضافة حلقة جديدة</h2><p>أدخل اسم الحلقة، ويمكنك إضافة رابط شعار اختياري.</p></div><button type="button" class="modal-close" id="closeCreateGroupModal" aria-label="إغلاق">×</button></header>
+    <header class="modal-head"><div><h2 id="createGroupModalTitle">إضافة حلقة جديدة</h2><p>أدخل اسم الحلقة ونوعها، ويمكنك إضافة رابط شعار اختياري.</p></div><button type="button" class="modal-close" id="closeCreateGroupModal" aria-label="إغلاق">×</button></header>
     <form id="createGroupForm">
       <div class="modal-body"><div class="modal-grid">
         <div class="modal-field"><label for="newGroupName">اسم الحلقة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
+        <div class="modal-field"><label for="newGroupType">نوع الحلقة *</label><input id="newGroupType" required maxlength="120" placeholder="مثال: تحفيظ القرآن، تعليمية، تجويد"><small class="modal-hint">سيظهر هذا النوع بجانب اسم المعلم في بطاقة الحلقة.</small></div>
         <div class="modal-field" id="newGroupTeacherField"><label for="newGroupTeacher">إسناد الحلقة إلى المعلم *</label><select id="newGroupTeacher"><option value="">جارٍ تحميل المعلمين...</option></select><small class="modal-hint">اختر المعلم المسؤول عن الحلقة؛ ستُربط الحلقة بحسابه.</small></div>
         <div class="modal-field"><label for="newGroupLogo">رابط شعار الحلقة (اختياري)</label><input id="newGroupLogo" type="url" maxlength="1000" placeholder="https://example.com/logo.png"><small class="modal-hint">ضع رابط صورة مباشرًا إذا كان للحلقة شعار.</small></div>
       </div><p class="modal-hint" id="createGroupRoleHint">سيتم إسناد الحلقة للمعلم الذي تختاره.</p></div>
@@ -861,18 +862,23 @@ async function createGroup(event){
   }
   const name=$("newGroupName").value.trim();
   if(!name){message("يرجى إدخال اسم الحلقة.","error");$("newGroupName").focus();return;}
+  const groupType=$("newGroupType").value.trim();
+  if(!groupType){message("يرجى تحديد نوع الحلقة.","error");$("newGroupType").focus();return;}
   const assignedTeacherId=currentProfile.role==="manager"?$("newGroupTeacher").value:currentProfile.id;
   if(!assignedTeacherId){message("يرجى اختيار المعلم الذي ستُسند إليه الحلقة.","error");$("newGroupTeacher").focus();return;}
   const button=$("createGroupBtn");
   button.disabled=true;button.textContent="جارٍ الإنشاء...";
   try{
     const logoUrl=$("newGroupLogo").value.trim()||null;
-    const group={name,teacher_id:assignedTeacherId};
-    // الشعار اختياري؛ إذا لم يكن العمود موجودًا بعد في قاعدة البيانات، أنشئ الحلقة دون الشعار بدل تعطيل العملية.
+    const group={name,teacher_id:assignedTeacherId,group_type:groupType};
+    // نوع الحلقة مطلوب ويجب أن يكون له عمود في جدول groups؛ الشعار وحده اختياري.
     let result=await db.from("groups").insert(logoUrl?{...group,logo_url:logoUrl}:group);
-    if(result.error && logoUrl && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
+    if(result.error && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")) {
       result=await db.from("groups").insert(group);
       if(!result.error) message("تم إنشاء الحلقة. لم يُحفظ الشعار لأن حقل الشعار غير مضاف في قاعدة البيانات بعد.","info");
+    }
+    if(result.error && /group_type|column .* does not exist|schema cache/i.test(result.error.message||"")) {
+      throw new Error("حقل نوع الحلقة غير موجود في جدول groups. نفّذ أمر SQL لإضافة العمود group_type ثم أعد المحاولة.");
     }
     if(result.error) throw result.error;
     $("createGroupForm").reset();
