@@ -373,8 +373,9 @@
     <form id="createGroupForm">
       <div class="modal-body"><div class="modal-grid">
         <div class="modal-field"><label for="newGroupName">اسم الحلقة *</label><input id="newGroupName" required maxlength="150" placeholder="اكتب اسم الحلقة"></div>
+        <div class="modal-field" id="newGroupTeacherField"><label for="newGroupTeacher">إسناد الحلقة إلى المعلم *</label><select id="newGroupTeacher"><option value="">جارٍ تحميل المعلمين...</option></select><small class="modal-hint">اختر المعلم المسؤول عن الحلقة؛ ستُربط الحلقة بحسابه.</small></div>
         <div class="modal-field"><label for="newGroupLogo">رابط شعار الحلقة (اختياري)</label><input id="newGroupLogo" type="url" maxlength="1000" placeholder="https://example.com/logo.png"><small class="modal-hint">ضع رابط صورة مباشرًا إذا كان للحلقة شعار.</small></div>
-      </div><p class="modal-hint">تُربط الحلقة تلقائيًا بحسابك، وتظل صلاحيات إدارة الحلقات خاضعة لدورك.</p></div>
+      </div><p class="modal-hint" id="createGroupRoleHint">سيتم إسناد الحلقة للمعلم الذي تختاره.</p></div>
       <footer class="modal-foot"><div class="save-state">يمكنك ترك رابط الشعار فارغًا.</div><div class="actions"><button type="button" class="btn secondary" id="cancelCreateGroupModal">إلغاء</button><button class="btn primary" id="createGroupBtn" type="submit">إنشاء الحلقة</button></div></footer>
     </form>
   </section>
@@ -695,7 +696,17 @@ function openStudentEdit(row,groupNames){
  $("studentEditBackdrop").classList.remove("hidden");$("studentEditBackdrop").setAttribute("aria-hidden","false");document.body.classList.add("modal-open");setTimeout(()=>$("editStudentName").focus(),30);
 }
 let managingStudentId=null;
-function setCreateGroupModal(open){const modal=$("createGroupBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);if(open)setTimeout(()=>$("newGroupName").focus(),30);}
+async function setCreateGroupModal(open){const modal=$("createGroupBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);const teacherField=$("newGroupTeacherField");if(currentProfile?.role==="manager"){teacherField.classList.remove("hidden");if(open)await loadGroupTeacherOptions();}else{teacherField.classList.add("hidden");$("createGroupRoleHint").textContent="ستُربط الحلقة تلقائيًا بحسابك كمعلم.";}if(open)setTimeout(()=>$("newGroupName").focus(),30);}
+async function loadGroupTeacherOptions(){
+  const select=$("newGroupTeacher");
+  select.innerHTML='<option value="">اختر المعلم المسؤول</option>';
+  const {data,error}=await db.from("profiles").select("id,full_name,is_active").eq("role","teacher").eq("is_active",true).order("full_name").limit(200);
+  if(error){select.innerHTML='<option value="">تعذر تحميل المعلمين</option>';message("تعذر تحميل قائمة المعلمين لإسناد الحلقة: "+error.message,"error");return;}
+  for(const teacher of (data||[])){
+    const option=document.createElement("option");option.value=teacher.id;option.textContent=teacher.full_name||"معلم بدون اسم";select.appendChild(option);
+  }
+  if(!data?.length){select.innerHTML='<option value="">لا يوجد معلمون نشطون</option>';}
+}
 $("openCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(true));
 $("closeCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(false));
 $("cancelCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(false));
@@ -850,11 +861,13 @@ async function createGroup(event){
   }
   const name=$("newGroupName").value.trim();
   if(!name){message("يرجى إدخال اسم الحلقة.","error");$("newGroupName").focus();return;}
+  const assignedTeacherId=currentProfile.role==="manager"?$("newGroupTeacher").value:currentProfile.id;
+  if(!assignedTeacherId){message("يرجى اختيار المعلم الذي ستُسند إليه الحلقة.","error");$("newGroupTeacher").focus();return;}
   const button=$("createGroupBtn");
   button.disabled=true;button.textContent="جارٍ الإنشاء...";
   try{
     const logoUrl=$("newGroupLogo").value.trim()||null;
-    const group={name,teacher_id:currentProfile.role==="teacher"?currentProfile.id:null};
+    const group={name,teacher_id:assignedTeacherId};
     // الشعار اختياري؛ إذا لم يكن العمود موجودًا بعد في قاعدة البيانات، أنشئ الحلقة دون الشعار بدل تعطيل العملية.
     let result=await db.from("groups").insert(logoUrl?{...group,logo_url:logoUrl}:group);
     if(result.error && logoUrl && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
