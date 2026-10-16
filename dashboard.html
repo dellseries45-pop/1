@@ -893,21 +893,41 @@ async function createGroup(event){
 async function loadGroups(){
   const container=$("groupsRows");
   container.innerHTML='<div class="empty">جارٍ تحميل الحلقات...</div>';
-  let result=await db.from("groups").select("id,name,teacher_id,logo_url").order("name").limit(200);
-  // توافق مع قواعد البيانات التي لم يُضف إليها logo_url بعد.
-  if(result.error && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
-    result=await db.from("groups").select("id,name,teacher_id").order("name").limit(200);
+  // تحميل بيانات الحلقة مع محاولة قراءة نوعها إن كان العمود موجودًا.
+  let result=await db.from("groups").select("id,name,teacher_id,logo_url,group_type").order("name").limit(200);
+  if(result.error && /group_type|logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
+    result=await db.from("groups").select("id,name,teacher_id,logo_url").order("name").limit(200);
+    if(result.error && /logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){
+      result=await db.from("groups").select("id,name,teacher_id").order("name").limit(200);
+    }
   }
   const {data,error}=result;
   if(error){container.innerHTML='<div class="empty">تعذر تحميل الحلقات. اضغط «تحديث البيانات» للمحاولة مجددًا.</div>';message("تعذر تحميل الحلقات: "+error.message,"error");return;}
   const groups=data||[];
   const countLabel=$("visibleGroupsCount");if(countLabel)countLabel.textContent=`${groups.length} ${groups.length===1?"حلقة":"حلقات"}`;
   if(!groups.length){container.innerHTML='<div class="empty">لا توجد حلقات متاحة لهذا الحساب حتى الآن.</div>';return;}
-  container.innerHTML=groups.map((row,index)=>{
+
+  // أسماء المعلمين وأعداد الطلاب لكل حلقة، دون تغيير صلاحيات RLS.
+  const teacherIds=[...new Set(groups.map(g=>g.teacher_id).filter(Boolean))];
+  const groupIds=groups.map(g=>g.id);
+  let teacherNames={};
+  if(teacherIds.length){
+    const {data:teachers}=await db.from("profiles").select("id,full_name").in("id",teacherIds);
+    teacherNames=Object.fromEntries((teachers||[]).map(t=>[t.id,t.full_name||"معلم غير محدد"]));
+  }
+  let studentCounts={};
+  if(groupIds.length){
+    const {data:students}=await db.from("students").select("group_id").in("group_id",groupIds);
+    for(const student of (students||[])){if(student.group_id)studentCounts[student.group_id]=(studentCounts[student.group_id]||0)+1;}
+  }
+  container.innerHTML=groups.map(row=>{
     const title=row.name||"حلقة بدون اسم";
+    const teacherName=teacherNames[row.teacher_id]||"لم يُسند إلى معلم";
+    const groupType=row.group_type||row.type||"نوع الحلقة غير محدد";
+    const studentCount=studentCounts[row.id]||0;
     return `<article class="group-card" data-group-card="${row.id}">
-      <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>حلقة تعليمية</span><span aria-hidden="true">•</span><span>رقم ${index+1}</span></div></div></div>
-      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">قائمة الطلاب</span><div class="actions"><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
+      <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>${escapeHtml(teacherName)}</span><span aria-hidden="true">•</span><span>${escapeHtml(groupType)}</span></div></div></div>
+      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">${studentCount} ${studentCount===1?"طالب":"طلاب"}</span><div class="actions"><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
   }).join("");
