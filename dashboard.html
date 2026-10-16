@@ -851,7 +851,7 @@ function showGroupsList(){
   if(groupDetailView) groupDetailView.classList.add("hidden");
   if(groupsListPanel) groupsListPanel.classList.remove("hidden");
   if(currentProfile?.role==="manager" && createGroupPanel) createGroupPanel.classList.remove("hidden");
-  const title=$("pageTitle");if(title)title.textContent=currentProfile?.role==="teacher"?"حلقاتي":"الحلقات";
+  const title=$("pageTitle");if(title)title.textContent=currentProfile?.role==="teacher"?"حلقاتي":"غيرت هنا الحلقات";
 }
 async function openGroupDetail(groupId, groupName){
   activeGroupId=groupId;
