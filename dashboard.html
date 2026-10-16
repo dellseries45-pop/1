@@ -167,14 +167,19 @@
     @media(max-width:850px){aside{padding:12px}main{padding:14px}.brand{padding-bottom:10px}.nav{margin-top:9px}.nav button{padding:9px 11px}.topbar{margin-bottom:14px}}
   
     .sidebar-welcome{margin:10px 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#fff!important;-webkit-text-fill-color:#fff;font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
-    input[type="date"]{direction:ltr!important;unicode-bidi:isolate;text-align:left!important;font-family:"Tajawal",sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important;font-variant-numeric:tabular-nums}
+    input[type="date"],input[type="month"]{direction:ltr!important;unicode-bidi:isolate;text-align:left!important;font-family:"Tajawal",sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important;font-variant-numeric:tabular-nums}
     /* Fix browser-rendered date segments separately; these labels are controlled by the date input internals, not the page font. */
     input[type="date"]::-webkit-datetime-edit,
     input[type="date"]::-webkit-datetime-edit-fields-wrapper,
     input[type="date"]::-webkit-datetime-edit-text,
     input[type="date"]::-webkit-datetime-edit-month-field,
     input[type="date"]::-webkit-datetime-edit-day-field,
-    input[type="date"]::-webkit-datetime-edit-year-field{direction:ltr!important;unicode-bidi:isolate!important;font-family:"Tajawal",sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important}
+    input[type="date"]::-webkit-datetime-edit-year-field,
+    input[type="month"]::-webkit-datetime-edit,
+    input[type="month"]::-webkit-datetime-edit-fields-wrapper,
+    input[type="month"]::-webkit-datetime-edit-text,
+    input[type="month"]::-webkit-datetime-edit-month-field,
+    input[type="month"]::-webkit-datetime-edit-year-field{direction:ltr!important;unicode-bidi:isolate!important;font-family:"Tajawal",sans-serif!important;letter-spacing:normal!important;word-spacing:normal!important}
     input[type="date"]::-webkit-calendar-picker-indicator{direction:ltr}
     .sidebar-logout{display:block;width:100%;margin-top:18px}
     .topbar #welcome{display:none}
@@ -253,10 +258,10 @@
         <div class="panel attendance-panel" id="attendancePanel">
           <div class="panel-head"><div><h2>الحضور والغياب</h2><p class="sub">سجّل حالة كل طالب ثم حفظ الحضور</p></div></div>
           <div class="attendance-toolbar">
-            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
+            <div class="field"><label for="attendanceDate">تاريخ الحضور</label><input id="attendanceDate" type="date" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Tajawal,sans-serif"></div>
             <button class="btn secondary" type="button" id="loadAttendanceBtn">عرض سجل اليوم</button>
             <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
-            <div class="field" style="min-width:150px"><label for="attendanceExportMonth">شهر التصدير</label><input id="attendanceExportMonth" type="month" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;font-family:Arial,sans-serif"></div>
+            <div class="field" style="min-width:150px"><label for="attendanceExportMonth">شهر التصدير</label><input id="attendanceExportMonth" type="month" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;font-family:Tajawal,sans-serif"></div>
             <button class="btn secondary" type="button" id="exportMonthlyAttendanceBtn">تصدير الحضور الشهري Excel</button>
             <button class="btn danger hidden" type="button" id="resetMonthlyAttendanceBtn">تصفير حضور الشهر المحدد</button>
           </div>
@@ -275,8 +280,8 @@
       <div class="panel">
         <div class="panel-head"><div><h2>تقارير الحضور والغياب</h2><p class="sub">اختر فترة زمنية وحلقة لعرض السجلات المحفوظة. هذه التقارير لا تحتسب رسومًا مالية.</p></div></div>
         <div class="form-grid">
-          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
-          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Arial,sans-serif"></div>
+          <div class="field"><label for="reportStartDate">من تاريخ</label><input type="date" id="reportStartDate" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Tajawal,sans-serif"></div>
+          <div class="field"><label for="reportEndDate">إلى تاريخ</label><input type="date" id="reportEndDate" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;unicode-bidi:isolate;font-family:Tajawal,sans-serif"></div>
           <div class="field"><label for="reportGroupFilter">الحلقة</label><select id="reportGroupFilter"><option value="">كل الحلقات المتاحة</option></select></div>
           <div class="field"><label for="reportStudentSearch">اسم الطالب (اختياري)</label><input id="reportStudentSearch" placeholder="ابحث باسم الطالب"></div>
           <div class="field"><label for="reportStatusFilter">حالة الحضور</label><select id="reportStatusFilter"><option value="">كل الحالات</option><option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option></select></div>
