@@ -744,12 +744,23 @@ async function saveGroupReassignment(event){
   if(!teacherId){message("يرجى اختيار المعلم الجديد.","error");$("reassignGroupTeacher").focus();return;}
   const button=$("saveReassignGroupBtn");button.disabled=true;button.textContent="جارٍ الحفظ...";
   try{
-    const {error}=await db.from("groups").update({teacher_id:teacherId}).eq("id",reassigningGroupId);
+    const {data:updatedGroup,error}=await db.from("groups")
+      .update({teacher_id:teacherId})
+      .eq("id",reassigningGroupId)
+      .select("id,teacher_id")
+      .maybeSingle();
     if(error)throw error;
+    // قد لا يعيد Supabase خطأ إذا لم تسمح RLS بتحديث أي صف؛ تحقق من الصف المعدّل فعليًا.
+    if(!updatedGroup){
+      throw new Error("لم يتم تعديل أي حلقة. قد تكون الحلقة غير متاحة للتحديث وفق سياسات الصلاحيات، أو أن معرّفها غير صحيح.");
+    }
+    if(updatedGroup.teacher_id!==teacherId){
+      throw new Error("لم يتطابق المعلم المحفوظ مع المعلم المختار. أعد تحميل الصفحة وحاول مرة أخرى.");
+    }
     setReassignGroupModal(false);
     message("تم إسناد الحلقة إلى المعلم الجديد بنجاح.","info");
     await Promise.all([loadGroups(),loadStatistics(),loadGroupOptions()]);
-  }catch(err){message("تعذر تغيير المعلم المسؤول. تحقق من صلاحيات تحديث جدول groups. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");}
+  }catch(err){message("تعذر تغيير المعلم المسؤول. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");}
   finally{button.disabled=false;button.textContent="حفظ الإسناد";}
 }
 $("openCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(true));
