@@ -382,6 +382,18 @@
   </section>
 </div>
 
+<div id="reassignGroupBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="reassignGroupTitle">
+    <header class="modal-head"><div><h2 id="reassignGroupTitle">إسناد الحلقة إلى معلم آخر</h2><p id="reassignGroupDescription">اختر المعلم الجديد المسؤول عن الحلقة.</p></div><button type="button" class="modal-close" id="closeReassignGroupModal" aria-label="إغلاق">×</button></header>
+    <form id="reassignGroupForm">
+      <div class="modal-body"><div class="modal-grid">
+        <div class="modal-field"><label for="reassignGroupTeacher">المعلم الجديد *</label><select id="reassignGroupTeacher" required><option value="">جارٍ تحميل المعلمين...</option></select><small class="modal-hint">سيتم تغيير المعلم المسؤول عن الحلقة، ولن تُحذف الحلقة أو طلابها.</small></div>
+      </div></div>
+      <footer class="modal-foot"><div class="save-state">تأكد من اختيار المعلم الصحيح قبل الحفظ.</div><div class="actions"><button type="button" class="btn secondary" id="cancelReassignGroupModal">إلغاء</button><button class="btn primary" id="saveReassignGroupBtn" type="submit">حفظ الإسناد</button></div></footer>
+    </form>
+  </section>
+</div>
+
 <div id="studentManageBackdrop" class="modal-backdrop hidden" aria-hidden="true">
  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="studentManageTitle">
   <header class="modal-head"><div><h2 id="studentManageTitle">إدارة الطالب</h2><p id="studentManageDescription">اختر الإجراء المطلوب.</p></div><button type="button" class="modal-close" id="closeStudentManageModal" aria-label="إغلاق">×</button></header>
@@ -481,9 +493,10 @@ $("openAddStudentModal").addEventListener("click",()=>setAddStudentModal(true));
 $("closeAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
 $("cancelAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
 $("addStudentBackdrop").addEventListener("click",e=>{if(e.target===$("addStudentBackdrop"))setAddStudentModal(false);});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);if(e.key==="Escape"&&!$("createGroupBackdrop").classList.contains("hidden"))setCreateGroupModal(false);if(e.key==="Escape"&&!$("studentManageBackdrop").classList.contains("hidden"))closeStudentManageModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);if(e.key==="Escape"&&!$("createGroupBackdrop").classList.contains("hidden"))setCreateGroupModal(false);if(e.key==="Escape"&&!$("studentManageBackdrop").classList.contains("hidden"))closeStudentManageModal();if(e.key==="Escape"&&!$("reassignGroupBackdrop").classList.contains("hidden"))setReassignGroupModal(false);});
 $("createTeacherForm").addEventListener("submit", createTeacher);
 $("createGroupForm").addEventListener("submit", createGroup);
+$("reassignGroupForm").addEventListener("submit", saveGroupReassignment);
 async function requireProfile(){
   const {data:{user},error}=await db.auth.getUser();
   if(error||!user){location.replace("./index.html");return false;}
@@ -708,8 +721,42 @@ async function loadGroupTeacherOptions(){
   }
   if(!data?.length){select.innerHTML='<option value="">لا يوجد معلمون نشطون</option>';}
 }
+let reassigningGroupId=null;
+async function setReassignGroupModal(open, groupId=null, groupName=""){
+  const modal=$("reassignGroupBackdrop");
+  modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);
+  if(!open){reassigningGroupId=null;return;}
+  if(currentProfile?.role!=="manager"){message("إعادة إسناد الحلقات متاحة للمدير فقط.","error");modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");return;}
+  reassigningGroupId=groupId;
+  $("reassignGroupDescription").textContent=`الحلقة: ${groupName}. اختر المعلم الجديد المسؤول عنها.`;
+  const select=$("reassignGroupTeacher");select.innerHTML='<option value="">جارٍ تحميل المعلمين...</option>';
+  const {data,error}=await db.from("profiles").select("id,full_name,is_active").eq("role","teacher").eq("is_active",true).order("full_name").limit(200);
+  if(error){select.innerHTML='<option value="">تعذر تحميل المعلمين</option>';message("تعذر تحميل المعلمين: "+error.message,"error");return;}
+  select.innerHTML='<option value="">اختر المعلم الجديد</option>';
+  for(const teacher of (data||[])){const option=document.createElement("option");option.value=teacher.id;option.textContent=teacher.full_name||"معلم بدون اسم";select.appendChild(option);}
+  if(!data?.length)select.innerHTML='<option value="">لا يوجد معلمون نشطون</option>';
+  setTimeout(()=>select.focus(),30);
+}
+async function saveGroupReassignment(event){
+  event.preventDefault();
+  if(currentProfile?.role!=="manager"||!reassigningGroupId){message("لا تملك صلاحية إعادة إسناد هذه الحلقة.","error");return;}
+  const teacherId=$("reassignGroupTeacher").value;
+  if(!teacherId){message("يرجى اختيار المعلم الجديد.","error");$("reassignGroupTeacher").focus();return;}
+  const button=$("saveReassignGroupBtn");button.disabled=true;button.textContent="جارٍ الحفظ...";
+  try{
+    const {error}=await db.from("groups").update({teacher_id:teacherId}).eq("id",reassigningGroupId);
+    if(error)throw error;
+    setReassignGroupModal(false);
+    message("تم إسناد الحلقة إلى المعلم الجديد بنجاح.","info");
+    await Promise.all([loadGroups(),loadStatistics(),loadGroupOptions()]);
+  }catch(err){message("تعذر تغيير المعلم المسؤول. تحقق من صلاحيات تحديث جدول groups. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");}
+  finally{button.disabled=false;button.textContent="حفظ الإسناد";}
+}
 $("openCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(true));
 $("closeCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(false));
+$("closeReassignGroupModal").addEventListener("click",()=>setReassignGroupModal(false));
+$("cancelReassignGroupModal").addEventListener("click",()=>setReassignGroupModal(false));
+$("reassignGroupBackdrop").addEventListener("click",e=>{if(e.target===$("reassignGroupBackdrop"))setReassignGroupModal(false);});
 $("cancelCreateGroupModal").addEventListener("click",()=>setCreateGroupModal(false));
 $("createGroupBackdrop").addEventListener("click",e=>{if(e.target===$("createGroupBackdrop"))setCreateGroupModal(false);});
 function setStudentManageModal(open){const modal=$("studentManageBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);}
@@ -933,7 +980,7 @@ async function loadGroups(){
     const studentCount=studentCounts[row.id]||0;
     return `<article class="group-card" data-group-card="${row.id}">
       <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>${escapeHtml(teacherName)}</span><span aria-hidden="true">•</span><span>${escapeHtml(groupType)}</span></div></div></div>
-      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">${studentCount} ${studentCount===1?"طالب":"طلاب"}</span><div class="actions"><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
+      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">${studentCount} ${studentCount===1?"طالب":"طلاب"}</span><div class="actions">${currentProfile?.role==="manager"?`<button class="btn secondary" type="button" data-reassign-group="${row.id}" data-group-name="${escapeHtml(title)}" style="padding:8px 10px;font-size:12px">إسناد لمعلم آخر</button>`:""}<button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
   }).join("");
@@ -1131,6 +1178,8 @@ $("exportMonthlyAttendanceBtn").addEventListener("click",exportMonthlyAttendance
 $("attendanceExportMonth").value=( $("attendanceDate").value || todayISO()).slice(0,7);
 
 $("groupsRows").addEventListener("click",async event=>{
+  const reassignButton=event.target.closest("[data-reassign-group]");
+  if(reassignButton){await setReassignGroupModal(true,reassignButton.dataset.reassignGroup,reassignButton.dataset.groupName||"حلقة");return;}
   const button=event.target.closest("[data-view-group]");if(!button || button.disabled)return;
   const card=button.closest("[data-group-card]");
   const name=card?.querySelector(".group-title")?.textContent?.trim()||"حلقة تعليمية";
