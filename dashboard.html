@@ -260,7 +260,7 @@
         <div class="student-management-head">
           <div class="student-management-title"><h2>إدارة الطلاب</h2><p class="sub">يمكنك تسجيل طالب جديد أو اختيار طالب لتعديل بياناته أو حذفه.</p></div>
         </div>
-        <div class="student-management-actions"><button class="btn primary" id="openAddStudentModal" type="button">＋ تسجيل طالب</button><button class="btn secondary" id="openManageStudentModal" type="button">✎ تعديل طالب</button><button class="btn danger" id="openDeleteStudentModal" type="button">حذف طالب</button></div>
+        <div class="student-management-actions"><button class="btn primary" id="openAddStudentModal" type="button">＋ تسجيل طالب</button><button class="btn secondary" id="openManageStudentModal" type="button">✎ تعديل طالب</button><button class="btn secondary" id="openTransferStudentModal" type="button">⇄ نقل طالب بين الحلقات</button><button class="btn danger" id="openDeleteStudentModal" type="button">حذف طالب</button></div>
         <div class="student-management-tools"><select id="studentGroupFilter" aria-label="اختر الحلقة لعرض الطلاب"><option value="">اختر الحلقة لعرض الطلاب</option></select><input id="studentSearch" placeholder="ابحث باسم الطالب" aria-label="البحث باسم الطالب"><button class="btn secondary" id="searchStudents" type="button">⌕ بحث</button></div>
       </div>
       <div class="panel student-list-panel">
@@ -382,6 +382,35 @@
   </section>
 </div>
 
+<div id="transferStudentBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="transferStudentTitle">
+    <header class="modal-head"><div><h2 id="transferStudentTitle">نقل طالب بين الحلقات</h2><p>اختر الحلقة الحالية والطالب والحلقة الجديدة.</p></div><button type="button" class="modal-close" id="closeTransferStudentModal" aria-label="إغلاق">×</button></header>
+    <form id="transferStudentForm">
+      <div class="modal-body"><div class="modal-grid">
+        <div class="modal-field"><label for="transferFromGroup">الحلقة الحالية *</label><select id="transferFromGroup" required><option value="">اختر الحلقة الحالية</option></select></div>
+        <div class="modal-field"><label for="transferStudentSelect">الطالب *</label><select id="transferStudentSelect" required disabled><option value="">اختر الحلقة أولاً</option></select></div>
+        <div class="modal-field wide"><label for="transferToGroup">الحلقة الجديدة *</label><select id="transferToGroup" required><option value="">اختر الحلقة الجديدة</option></select></div>
+      </div><p id="transferStudentStatus" class="modal-hint">سيتم تغيير الحلقة المرتبطة بالطالب فقط.</p></div>
+      <footer class="modal-foot"><div class="save-state">راجع الاختيارات قبل تأكيد النقل.</div><div class="actions"><button type="button" class="btn secondary" id="cancelTransferStudentModal">إلغاء</button><button class="btn primary" id="saveTransferStudentBtn" type="submit">تأكيد النقل</button></div></footer>
+    </form>
+  </section>
+</div>
+
+<div id="editGroupBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="editGroupTitle">
+    <header class="modal-head"><div><h2 id="editGroupTitle">تعديل الحلقة</h2><p>تعديل اسم الحلقة ونوعها وصورتها والمعلم المسؤول.</p></div><button type="button" class="modal-close" id="closeEditGroupModal" aria-label="إغلاق">×</button></header>
+    <form id="editGroupForm">
+      <div class="modal-body"><input type="hidden" id="editingGroupId"><div class="modal-grid">
+        <div class="modal-field"><label for="editGroupName">اسم الحلقة *</label><input id="editGroupName" required maxlength="150"></div>
+        <div class="modal-field"><label for="editGroupType">نوع الحلقة *</label><input id="editGroupType" required maxlength="120"></div>
+        <div class="modal-field"><label for="editGroupIcon">الأيقونة</label><select id="editGroupIcon"><option value="📚">📚 كتب</option><option value="📖">📖 كتاب</option><option value="🕌">🕌 مسجد</option><option value="🌙">🌙 هلال</option><option value="⭐">⭐ نجمة</option><option value="🌿">🌿 غصن</option><option value="🧒">🧒 أطفال</option><option value="✦">✦ رمز افتراضي</option></select></div>
+        <div class="modal-field"><label for="editGroupLogo">رابط صورة تعبيرية (اختياري)</label><input id="editGroupLogo" type="url" maxlength="1000" placeholder="https://..."></div>
+      </div><p id="editGroupStatus" class="modal-hint"></p></div>
+      <footer class="modal-foot"><div class="save-state">احفظ التعديلات بعد مراجعتها.</div><div class="actions"><button type="button" class="btn secondary" id="cancelEditGroupModal">إلغاء</button><button class="btn primary" id="saveEditGroupBtn" type="submit">حفظ التعديلات</button></div></footer>
+    </form>
+  </section>
+</div>
+
 <div id="reassignGroupBackdrop" class="modal-backdrop hidden" aria-hidden="true">
   <section class="edit-modal" role="dialog" aria-modal="true" aria-labelledby="reassignGroupTitle">
     <header class="modal-head"><div><h2 id="reassignGroupTitle">إسناد الحلقة إلى معلم آخر</h2><p id="reassignGroupDescription">اختر المعلم الجديد المسؤول عن الحلقة.</p></div><button type="button" class="modal-close" id="closeReassignGroupModal" aria-label="إغلاق">×</button></header>
@@ -493,10 +522,18 @@ $("openAddStudentModal").addEventListener("click",()=>setAddStudentModal(true));
 $("closeAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
 $("cancelAddStudentModal").addEventListener("click",()=>setAddStudentModal(false));
 $("addStudentBackdrop").addEventListener("click",e=>{if(e.target===$("addStudentBackdrop"))setAddStudentModal(false);});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);if(e.key==="Escape"&&!$("createGroupBackdrop").classList.contains("hidden"))setCreateGroupModal(false);if(e.key==="Escape"&&!$("studentManageBackdrop").classList.contains("hidden"))closeStudentManageModal();if(e.key==="Escape"&&!$("reassignGroupBackdrop").classList.contains("hidden"))setReassignGroupModal(false);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("addStudentBackdrop").classList.contains("hidden"))setAddStudentModal(false);if(e.key==="Escape"&&!$("createGroupBackdrop").classList.contains("hidden"))setCreateGroupModal(false);if(e.key==="Escape"&&!$("studentManageBackdrop").classList.contains("hidden"))closeStudentManageModal();if(e.key==="Escape"&&!$("reassignGroupBackdrop").classList.contains("hidden"))setReassignGroupModal(false);if(e.key==="Escape"&&!$("transferStudentBackdrop").classList.contains("hidden"))setTransferStudentModal(false);if(e.key==="Escape"&&!$("editGroupBackdrop").classList.contains("hidden"))setEditGroupModal(false);});
 $("createTeacherForm").addEventListener("submit", createTeacher);
 $("createGroupForm").addEventListener("submit", createGroup);
 $("reassignGroupForm").addEventListener("submit", saveGroupReassignment);
+$("openTransferStudentModal").addEventListener("click",openTransferStudentModal);
+$("transferFromGroup").addEventListener("change",loadTransferStudents);
+$("transferStudentForm").addEventListener("submit",saveStudentTransfer);
+["closeTransferStudentModal","cancelTransferStudentModal"].forEach(id=>$(id).addEventListener("click",()=>setTransferStudentModal(false)));
+$("transferStudentBackdrop").addEventListener("click",e=>{if(e.target===$("transferStudentBackdrop"))setTransferStudentModal(false);});
+$("editGroupForm").addEventListener("submit",saveGroupEdit);
+["closeEditGroupModal","cancelEditGroupModal"].forEach(id=>$(id).addEventListener("click",()=>setEditGroupModal(false)));
+$("editGroupBackdrop").addEventListener("click",e=>{if(e.target===$("editGroupBackdrop"))setEditGroupModal(false);});
 async function requireProfile(){
   const {data:{user},error}=await db.auth.getUser();
   if(error||!user){location.replace("./index.html");return false;}
@@ -722,6 +759,83 @@ async function loadGroupTeacherOptions(){
   if(!data?.length){select.innerHTML='<option value="">لا يوجد معلمون نشطون</option>';}
 }
 let reassigningGroupId=null;
+function setTransferStudentModal(open){
+  const modal=$("transferStudentBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);
+  if(!open){$("transferStudentForm").reset();$("transferStudentSelect").innerHTML='<option value="">اختر الحلقة أولاً</option>';$("transferStudentSelect").disabled=true;}
+}
+async function openTransferStudentModal(){
+  if(!currentProfile||!["manager","teacher"].includes(currentProfile.role)){message("لا تملك صلاحية نقل الطلاب.","error");return;}
+  setTransferStudentModal(true);
+  const from=$("transferFromGroup"),to=$("transferToGroup");from.innerHTML='<option value="">جارٍ تحميل الحلقات...</option>';to.innerHTML='<option value="">جارٍ تحميل الحلقات...</option>';
+  let query=db.from("groups").select("id,name,teacher_id").order("name").limit(500);
+  if(currentProfile.role==="teacher")query=query.eq("teacher_id",currentProfile.id);
+  const {data,error}=await query;
+  if(error){message("تعذر تحميل الحلقات المتاحة: "+error.message,"error");return;}
+  const groups=data||[];const options='<option value="">اختر الحلقة</option>'+groups.map(g=>`<option value="${escapeHtml(g.id)}">${escapeHtml(g.name||"حلقة بدون اسم")}</option>`).join("");
+  from.innerHTML=options;to.innerHTML=options;
+  $("transferStudentStatus").textContent=currentProfile.role==="manager"?"يمكنك النقل بين أي حلقتين، حتى إن كان المعلمان مختلفين.":"يمكنك النقل بين الحلقات المسندة إلى حسابك فقط.";
+  $("saveTransferStudentBtn").disabled=groups.length<2;
+  if(groups.length<2)$("transferStudentStatus").textContent="لا توجد حلقتان متاحتان على الأقل لإتمام النقل.";
+}
+async function loadTransferStudents(){
+  const groupId=$("transferFromGroup").value,select=$("transferStudentSelect");select.disabled=true;select.innerHTML='<option value="">جارٍ تحميل الطلاب...</option>';
+  if(!groupId){select.innerHTML='<option value="">اختر الحلقة أولاً</option>';return;}
+  const {data,error}=await db.from("students").select("id,full_name").eq("group_id",groupId).order("full_name").limit(1000);
+  if(error){select.innerHTML='<option value="">تعذر تحميل الطلاب</option>';message("تعذر تحميل طلاب الحلقة: "+error.message,"error");return;}
+  select.innerHTML='<option value="">اختر الطالب</option>'+(data||[]).map(st=>`<option value="${escapeHtml(st.id)}">${escapeHtml(st.full_name||"طالب بلا اسم")}</option>`).join("");select.disabled=!(data||[]).length;
+  if(!data?.length)select.innerHTML='<option value="">لا يوجد طلاب في هذه الحلقة</option>';
+  [...$("transferToGroup").options].forEach(o=>{o.disabled=!!groupId&&o.value===groupId;});
+}
+async function saveStudentTransfer(event){
+  event.preventDefault();const from=$("transferFromGroup").value,studentId=$("transferStudentSelect").value,to=$("transferToGroup").value;
+  if(!from||!studentId||!to){message("اختر الحلقة الحالية والطالب والحلقة الجديدة.","error");return;}
+  if(from===to){message("اختر حلقة مختلفة عن الحلقة الحالية.","error");return;}
+  if(currentProfile?.role==="teacher"){
+    const {data:allowed,error}=await db.from("groups").select("id").in("id",[from,to]).eq("teacher_id",currentProfile.id);
+    if(error||new Set((allowed||[]).map(g=>g.id)).size!==2){message("يمكن للمعلم نقل الطالب بين حلقاته المسندة إليه فقط.","error");return;}
+  }
+  const destName=$("transferToGroup").selectedOptions[0]?.textContent||"الحلقة الجديدة";
+  if(!await confirmDialog({title:"تأكيد نقل الطالب",text:`هل تريد نقل الطالب إلى «${destName}»؟`,confirmText:"نعم، انقل الطالب"}))return;
+  const btn=$("saveTransferStudentBtn");btn.disabled=true;btn.textContent="جارٍ النقل...";
+  try{
+    const {data,error}=await db.from("students").update({group_id:to}).eq("id",studentId).eq("group_id",from).select("id,group_id").maybeSingle();
+    if(error)throw error;if(!data||data.group_id!==to)throw new Error("لم يتم نقل الطالب. قد تمنع سياسات الصلاحيات هذا النقل.");
+    setTransferStudentModal(false);message("تم نقل الطالب إلى الحلقة الجديدة بنجاح.","info");
+    await Promise.all([loadStudents(),loadGroups(),loadStatistics(),loadGroupOptions()]);
+  }catch(err){message("تعذر نقل الطالب: "+(err?.message||"خطأ غير معروف"),"error");}
+  finally{btn.disabled=false;btn.textContent="تأكيد النقل";}
+}
+function setEditGroupModal(open){
+  const modal=$("editGroupBackdrop");modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);
+  if(!open)$("editingGroupId").value="";
+}
+async function openEditGroupModal(groupId){
+  if(!currentProfile||!["manager","teacher"].includes(currentProfile.role)){message("لا تملك صلاحية تعديل الحلقات.","error");return;}
+  let {data:group,error}=await db.from("groups").select("id,name,teacher_id,logo_url,group_type").eq("id",groupId).maybeSingle();
+  if(error&&/group_type|logo_url|schema cache|column .* does not exist/i.test(error.message||"")){
+    ({data:group,error}=await db.from("groups").select("id,name,teacher_id,logo_url").eq("id",groupId).maybeSingle());
+    if(error&&/logo_url|schema cache|column .* does not exist/i.test(error.message||""))({data:group,error}=await db.from("groups").select("id,name,teacher_id").eq("id",groupId).maybeSingle());
+  }
+  if(error||!group){message("تعذر تحميل بيانات الحلقة: "+(error?.message||"الحلقة غير متاحة"),"error");return;}
+  if(currentProfile.role!=="manager"&&group.teacher_id!==currentProfile.id){message("يمكنك تعديل الحلقات المسندة إلى حسابك فقط.","error");return;}
+  $("editingGroupId").value=group.id;$("editGroupName").value=group.name||"";$("editGroupType").value=group.group_type||"";$("editGroupLogo").value=(group.logo_url&&!group.logo_url.startsWith("emoji:"))?group.logo_url:"";$("editGroupIcon").value=group.logo_url?.startsWith("emoji:")?group.logo_url.slice(6):"📚";$("editGroupStatus").textContent="";
+  setEditGroupModal(true);setTimeout(()=>$("editGroupName").focus(),30);
+}
+async function saveGroupEdit(event){
+  event.preventDefault();const id=$("editingGroupId").value,name=$("editGroupName").value.trim(),groupType=$("editGroupType").value.trim(),imageUrl=$("editGroupLogo").value.trim(),logoUrl=imageUrl||("emoji:"+$("editGroupIcon").value);
+  if(!id||!name||!groupType){message("اسم الحلقة ونوعها مطلوبان.","error");return;}
+  const btn=$("saveEditGroupBtn");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
+  try{
+    const updates={name,group_type:groupType,logo_url:logoUrl};
+    let result=await db.from("groups").update(updates).eq("id",id).select("id,name,teacher_id,group_type,logo_url").maybeSingle();
+    if(result.error&&/group_type|column .* does not exist|schema cache/i.test(result.error.message||"")){delete updates.group_type;result=await db.from("groups").update(updates).eq("id",id).select("id,name,teacher_id,logo_url").maybeSingle();}
+    if(result.error&&/logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){delete updates.logo_url;result=await db.from("groups").update(updates).eq("id",id).select("id,name,teacher_id").maybeSingle();}
+    if(result.error)throw result.error;if(!result.data)throw new Error("لم يتم تعديل الحلقة؛ تحقق من صلاحيات RLS.");
+    setEditGroupModal(false);message("تم حفظ تعديلات الحلقة بنجاح.","info");await Promise.all([loadGroups(),loadGroupOptions(),loadStatistics()]);
+  }catch(err){$("editGroupStatus").textContent="تعذر حفظ التعديلات: "+(err?.message||"خطأ غير معروف");message($("editGroupStatus").textContent,"error");}
+  finally{btn.disabled=false;btn.textContent="حفظ التعديلات";}
+}
+
 async function setReassignGroupModal(open, groupId=null, groupName=""){
   const modal=$("reassignGroupBackdrop");
   modal.classList.toggle("hidden",!open);modal.setAttribute("aria-hidden",String(!open));document.body.classList.toggle("modal-open",open);
@@ -990,8 +1104,8 @@ async function loadGroups(){
     const groupType=row.group_type||row.type||"نوع الحلقة غير محدد";
     const studentCount=studentCounts[row.id]||0;
     return `<article class="group-card" data-group-card="${row.id}">
-      <div class="group-card-head">${row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>${escapeHtml(teacherName)}</span><span aria-hidden="true">•</span><span>${escapeHtml(groupType)}</span></div></div></div>
-      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">${studentCount} ${studentCount===1?"طالب":"طلاب"}</span><div class="actions">${currentProfile?.role==="manager"?`<button class="btn secondary" type="button" data-reassign-group="${row.id}" data-group-name="${escapeHtml(title)}" style="padding:8px 10px;font-size:12px">إسناد لمعلم آخر</button>`:""}<button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
+      <div class="group-card-head">${row.logo_url?.startsWith("emoji:")?`<div class="group-icon" aria-hidden="true">${escapeHtml(row.logo_url.slice(6))}</div>`:row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>${escapeHtml(teacherName)}</span><span aria-hidden="true">•</span><span>${escapeHtml(groupType)}</span></div></div></div>
+      <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">${studentCount} ${studentCount===1?"طالب":"طلاب"}</span><div class="actions">${(currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&row.teacher_id===currentProfile.id))?`<button class="btn secondary" type="button" data-edit-group="${row.id}" style="padding:8px 10px;font-size:12px">تعديل الحلقة</button>`:""}${currentProfile?.role==="manager"?`<button class="btn secondary" type="button" data-reassign-group="${row.id}" data-group-name="${escapeHtml(title)}" style="padding:8px 10px;font-size:12px">إسناد لمعلم آخر</button>`:""}<button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
   }).join("");
@@ -1189,6 +1303,8 @@ $("exportMonthlyAttendanceBtn").addEventListener("click",exportMonthlyAttendance
 $("attendanceExportMonth").value=( $("attendanceDate").value || todayISO()).slice(0,7);
 
 $("groupsRows").addEventListener("click",async event=>{
+  const editGroupButton=event.target.closest("[data-edit-group]");
+  if(editGroupButton){await openEditGroupModal(editGroupButton.dataset.editGroup);return;}
   const reassignButton=event.target.closest("[data-reassign-group]");
   if(reassignButton){await setReassignGroupModal(true,reassignButton.dataset.reassignGroup,reassignButton.dataset.groupName||"حلقة");return;}
   const button=event.target.closest("[data-view-group]");if(!button || button.disabled)return;
