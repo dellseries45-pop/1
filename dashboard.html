@@ -238,6 +238,12 @@
     .groups-management-picker select{width:100%;min-height:47px;padding:11px 13px;border:1px solid #d7e3e8;border-radius:11px;background:#fbfdfe;color:#213d52;font-weight:700;outline:none;transition:border-color .18s,box-shadow .18s}
     .groups-management-picker select:focus{border-color:#49aaa8;box-shadow:0 0 0 3px #078b9117}
     .groups-management-picker small{display:block;margin-top:9px;color:#8796a3;font-size:12px;line-height:1.7}
+    .gm-group-preview{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border:1px solid #e1ecef;border-radius:13px;background:linear-gradient(135deg,#f8fcfc,#f1f8f8);min-height:76px}
+    .gm-preview-icon{display:grid;place-items:center;width:54px;height:54px;flex:0 0 54px;border-radius:13px;background:#e0f2f0;color:#087f83;font-size:25px;overflow:hidden}
+    .gm-preview-icon img{width:100%;height:100%;object-fit:cover;display:block}
+    .gm-group-preview strong,.gm-group-preview span{display:block;overflow-wrap:anywhere}
+    .gm-group-preview strong{color:#244257;font-size:13px;font-weight:800}
+    .gm-group-preview span{margin-top:4px;color:#718394;font-size:12px;line-height:1.5}
     .groups-management-actions-title{font-size:14px;font-weight:800;color:#29445a;margin:1px 0 13px}
     .groups-management-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
     .groups-management-buttons .gm-action{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 12px;border-radius:11px;font-size:13px;line-height:1.45;white-space:normal;transition:transform .16s,box-shadow .16s,border-color .16s}
@@ -328,6 +334,7 @@
           <div class="groups-management-picker">
             <label for="manageGroupSelect"><span class="groups-management-label-icon" aria-hidden="true">▤</span> اختر الحلقة</label>
             <select id="manageGroupSelect"><option value="">اختر الحلقة التي تريد إدارتها</option></select>
+            <div class="gm-group-preview" id="manageGroupPreview" aria-live="polite"><div class="gm-preview-icon">✦</div><div><strong>معاينة الحلقة</strong><span>اختر حلقة لعرض صورتها وبياناتها هنا.</span></div></div>
             <small>حدد الحلقة أولًا لتفعيل الإجراءات المتاحة لها.</small>
           </div>
           <div class="groups-management-actions">
@@ -1134,11 +1141,17 @@ function refreshGroupManagementOptions(groups=groupsForManagement){
 function selectedManagementGroup(){return groupsForManagement.find(group=>group.id===$("manageGroupSelect")?.value)||null;}
 function updateGroupManagementButtons(){
   const group=selectedManagementGroup();
-  const edit=$("manageEditGroupBtn"),reassign=$("manageReassignGroupBtn"),del=$("manageDeleteGroupBtn"),hint=$("manageGroupHint");
+  const edit=$("manageEditGroupBtn"),reassign=$("manageReassignGroupBtn"),del=$("manageDeleteGroupBtn"),hint=$("manageGroupHint"),preview=$("manageGroupPreview");
   if(edit)edit.disabled=!group;
   if(del)del.disabled=!group;
   if(reassign){reassign.disabled=!group||currentProfile?.role!=="manager";reassign.classList.toggle("hidden",currentProfile?.role!=="manager");}
   if(hint)hint.textContent=group?`الحلقة المحددة: ${group.name||"حلقة بدون اسم"}. ${currentProfile?.role==="manager"?"يمكنك تعديلها أو إسنادها لمعلم آخر أو حذفها إذا كانت فارغة.":"يمكنك تعديل أو حذف الحلقة المسندة إلى حسابك فقط."}`:"اختر حلقة أولًا. إسناد الحلقة إلى معلم آخر متاح للمدير فقط.";
+  if(preview){
+    const logo=group?.logo_url||"";
+    const icon=logo.startsWith("emoji:")?escapeHtml(logo.slice(6)):"✦";
+    const media=logo&&!logo.startsWith("emoji:")?`<img src="${escapeHtml(logo)}" alt="" onerror="this.parentElement.innerHTML='<span aria-hidden=\"true\">✦</span>'">`:icon;
+    preview.innerHTML=`<div class="gm-preview-icon">${media}</div><div><strong>${escapeHtml(group?.name||"معاينة الحلقة")}</strong><span>${group?(logo&&!logo.startsWith("emoji:")?"صورة الحلقة":"يمكنك اختيار صورة أو أيقونة من تعديل البيانات."):"اختر حلقة لعرض صورتها وبياناتها هنا."}</span></div>`;
+  }
 }
 $("manageGroupSelect").addEventListener("change",updateGroupManagementButtons);
 $("manageEditGroupBtn").addEventListener("click",async()=>{const group=selectedManagementGroup();if(group)await openEditGroupModal(group.id);});
@@ -1182,7 +1195,7 @@ async function loadGroups(){
     const groupType=row.group_type||row.type||"نوع الحلقة غير محدد";
     const studentCount=studentCounts[row.id]||0;
     return `<article class="group-card" data-group-card="${row.id}">
-      <div class="group-card-head">${row.logo_url?.startsWith("emoji:")?`<div class="group-icon" aria-hidden="true">${escapeHtml(row.logo_url.slice(6))}</div>`:row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.style.display='none'">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>${escapeHtml(teacherName)}</span><span aria-hidden="true">•</span><span>${escapeHtml(groupType)}</span></div></div></div>
+      <div class="group-card-head">${row.logo_url?.startsWith("emoji:")?`<div class="group-icon" aria-hidden="true">${escapeHtml(row.logo_url.slice(6))}</div>`:row.logo_url?`<img class="group-icon" src="${escapeHtml(row.logo_url)}" alt="شعار ${escapeHtml(title)}" style="object-fit:cover" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'group-icon',textContent:'✦',title:'تعذر تحميل الصورة؛ استخدم رابط صورة مباشرًا ومتاحًا للعامة'}))">`:`<div class="group-icon" aria-hidden="true">✦</div>`}<div class="group-title-wrap"><h3 class="group-title">${escapeHtml(title)}</h3><div class="group-meta"><span>${escapeHtml(teacherName)}</span><span aria-hidden="true">•</span><span>${escapeHtml(groupType)}</span></div></div></div>
       <div class="group-card-actions"><span class="group-count" data-roster-count="${row.id}">${studentCount} ${studentCount===1?"طالب":"طلاب"}</span><div class="actions"><button class="group-view-btn" type="button" data-view-group="${row.id}" aria-expanded="false" aria-controls="roster-${row.id}">عرض الحلقة <span class="chevron" aria-hidden="true">⌄</span></button></div></div>
       <div class="group-roster hidden" id="roster-${row.id}" data-roster="${row.id}" aria-live="polite"></div>
     </article>`;
