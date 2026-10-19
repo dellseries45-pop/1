@@ -223,6 +223,36 @@
       background: rgba(20, 155, 158, .12);
     }
     .registration-date-hint b { color: var(--gold, #c49a3a); }
+
+    /* Refined groups management panel */
+    .groups-management-panel{position:relative;overflow:hidden;padding:0;border:1px solid #dce8ed;background:linear-gradient(145deg,#fff 0%,#f8fbfc 100%);box-shadow:0 10px 30px #102b460b}
+    .groups-management-panel:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--teal),#70c9c3,var(--gold))}
+    .groups-management-heading{display:flex;align-items:center;gap:14px;padding:22px 24px 18px;border-bottom:1px solid #e8eff2}
+    .groups-management-titlemark{display:grid;place-items:center;width:46px;height:46px;flex:0 0 46px;border-radius:15px;background:linear-gradient(145deg,#e5f6f4,#d7eeee);color:#087f83;font-size:24px;box-shadow:inset 0 0 0 1px #c8e8e5}
+    .groups-management-titlecopy{min-width:0;flex:1}.groups-management-titlecopy h2{font-size:21px;color:var(--navy);margin:0;font-weight:800}.groups-management-titlecopy p{margin:5px 0 0;color:#718394;font-size:14px;line-height:1.6}
+    .groups-management-chip{flex:0 0 auto;padding:7px 11px;border-radius:30px;background:#f7f1e5;color:#98733b;font-size:12px;font-weight:800;border:1px solid #efe2c7}
+    .groups-management-content{display:grid;grid-template-columns:minmax(230px,.85fr) minmax(0,1.5fr);gap:18px;padding:22px 24px;align-items:stretch}
+    .groups-management-picker,.groups-management-actions{padding:17px;border:1px solid #e3ebef;border-radius:15px;background:#fff;min-width:0}
+    .groups-management-picker label{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:#29445a;margin-bottom:11px}
+    .groups-management-label-icon{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#eaf7f6;color:#087f83;font-size:15px}
+    .groups-management-picker select{width:100%;min-height:47px;padding:11px 13px;border:1px solid #d7e3e8;border-radius:11px;background:#fbfdfe;color:#213d52;font-weight:700;outline:none;transition:border-color .18s,box-shadow .18s}
+    .groups-management-picker select:focus{border-color:#49aaa8;box-shadow:0 0 0 3px #078b9117}
+    .groups-management-picker small{display:block;margin-top:9px;color:#8796a3;font-size:12px;line-height:1.7}
+    .groups-management-actions-title{font-size:14px;font-weight:800;color:#29445a;margin:1px 0 13px}
+    .groups-management-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .groups-management-buttons .gm-action{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 12px;border-radius:11px;font-size:13px;line-height:1.45;white-space:normal;transition:transform .16s,box-shadow .16s,border-color .16s}
+    .groups-management-buttons .gm-action>span:first-child{font-size:17px;font-weight:800}
+    .groups-management-buttons .gm-edit{background:#eef8f7;border:1px solid #d2ece9;color:#087d80}
+    .groups-management-buttons .gm-reassign{background:#f1f5fb;border:1px solid #dce5f2;color:#355a84}
+    .groups-management-buttons .gm-delete{background:#fff2f2;border:1px solid #f5dada;color:#b43d49}
+    .groups-management-buttons .gm-action:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 7px 16px #102b4612}
+    .groups-management-buttons .gm-action:disabled{opacity:.42;cursor:not-allowed;filter:saturate(.55)}
+    .groups-management-footnote{display:flex;align-items:flex-start;gap:10px;margin:0 24px 22px;padding:12px 14px;border-radius:12px;background:#f1f7f9;border:1px solid #e2edf1}
+    .groups-management-info{display:grid;place-items:center;flex:0 0 21px;height:21px;border-radius:50%;background:#dcefed;color:#087f83;font-weight:800;font-family:serif}
+    .groups-management-footnote p{margin:0;color:#637889;font-size:13px;line-height:1.8}
+    @media(max-width:850px){.groups-management-content{grid-template-columns:1fr}.groups-management-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.groups-management-buttons .gm-delete{grid-column:auto}}
+    @media(max-width:520px){.groups-management-heading{padding:18px 15px 15px;gap:10px}.groups-management-titlemark{width:40px;height:40px;flex-basis:40px;border-radius:12px}.groups-management-titlecopy h2{font-size:19px}.groups-management-titlecopy p{font-size:12px}.groups-management-chip{display:none}.groups-management-content{padding:15px;gap:12px}.groups-management-picker,.groups-management-actions{padding:13px}.groups-management-buttons{grid-template-columns:1fr}.groups-management-buttons .gm-action{justify-content:flex-start;padding-inline:14px}.groups-management-footnote{margin:0 15px 16px}}
+
 </style>
 </head>
 <body>
@@ -288,17 +318,28 @@
       <div class="panel" id="groupsListPanel"><div class="panel-head"><div><h2>الحلقات</h2><p class="sub">اختر الحلقة لفتح صفحة تفاصيلها وقائمة طلابها.</p></div><div class="actions"><span class="group-count" id="visibleGroupsCount">— حلقة</span><button class="btn primary" id="openCreateGroupModal" type="button">＋ إضافة حلقة</button></div></div>
         <div class="groups-grid" id="groupsRows"><div class="empty">جارٍ تحميل الحلقات...</div></div>
       </div>
-      <div class="panel" id="groupsManagementPanel">
-        <div class="panel-head"><div><h2>إدارة الحلقات</h2><p class="sub">اختر حلقة ثم نفّذ الإجراء المطلوب من هنا.</p></div></div>
-        <div class="form-grid" style="align-items:end">
-          <div class="field" style="grid-column:span 2"><label for="manageGroupSelect">الحلقة</label><select id="manageGroupSelect"><option value="">اختر الحلقة لإدارتها</option></select></div>
-          <div class="field"><label>الإجراءات</label><div class="actions" style="gap:8px">
-            <button class="btn secondary" type="button" id="manageEditGroupBtn" disabled>تعديل الاسم والصورة</button>
-            <button class="btn secondary" type="button" id="manageReassignGroupBtn">إسناد لمعلم آخر</button>
-            <button class="btn danger" type="button" id="manageDeleteGroupBtn" disabled>حذف الحلقة</button>
-          </div></div>
+      <div class="panel groups-management-panel" id="groupsManagementPanel">
+        <div class="groups-management-heading">
+          <div class="groups-management-titlemark" aria-hidden="true">⚙</div>
+          <div class="groups-management-titlecopy"><h2>إدارة الحلقات</h2><p>إجراءات الحلقة في مكان واحد، بخطوات واضحة وسريعة.</p></div>
+          <span class="groups-management-chip">إدارة وتنظيم</span>
         </div>
-        <p class="modal-hint" id="manageGroupHint" style="margin-bottom:0">يتاح تعديل الحلقات المسندة إلى حسابك فقط. إسناد الحلقة إلى معلم آخر متاح للمدير.</p>
+        <div class="groups-management-content">
+          <div class="groups-management-picker">
+            <label for="manageGroupSelect"><span class="groups-management-label-icon" aria-hidden="true">▤</span> اختر الحلقة</label>
+            <select id="manageGroupSelect"><option value="">اختر الحلقة التي تريد إدارتها</option></select>
+            <small>حدد الحلقة أولًا لتفعيل الإجراءات المتاحة لها.</small>
+          </div>
+          <div class="groups-management-actions">
+            <div class="groups-management-actions-title">الإجراءات المتاحة</div>
+            <div class="groups-management-buttons">
+              <button class="btn secondary gm-action gm-edit" type="button" id="manageEditGroupBtn" disabled><span aria-hidden="true">✎</span><span>تعديل بيانات الحلقة</span></button>
+              <button class="btn secondary gm-action gm-reassign" type="button" id="manageReassignGroupBtn"><span aria-hidden="true">⇄</span><span>إسناد لمعلم آخر</span></button>
+              <button class="btn danger gm-action gm-delete" type="button" id="manageDeleteGroupBtn" disabled><span aria-hidden="true">⌫</span><span>حذف الحلقة</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="groups-management-footnote"><span class="groups-management-info" aria-hidden="true">i</span><p id="manageGroupHint">يتاح تعديل الحلقات المسندة إلى حسابك فقط. إسناد الحلقة إلى معلم آخر متاح للمدير.</p></div>
       </div>
       <section id="groupDetailView" class="hidden" aria-live="polite">
         <div class="hidden" aria-hidden="true"><span id="groupDetailSubtitle"></span><span id="groupDetailStudentCount"></span></div>
