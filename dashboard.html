@@ -231,6 +231,7 @@
     .groups-management-titlemark{display:grid;place-items:center;width:46px;height:46px;flex:0 0 46px;border-radius:15px;background:linear-gradient(145deg,#e5f6f4,#d7eeee);color:#087f83;font-size:24px;box-shadow:inset 0 0 0 1px #c8e8e5}
     .groups-management-titlecopy{min-width:0;flex:1}.groups-management-titlecopy h2{font-size:21px;color:var(--navy);margin:0;font-weight:800}.groups-management-titlecopy p{margin:5px 0 0;color:#718394;font-size:14px;line-height:1.6}
     .groups-management-chip{flex:0 0 auto;padding:7px 11px;border-radius:30px;background:#f7f1e5;color:#98733b;font-size:12px;font-weight:800;border:1px solid #efe2c7}
+    .groups-management-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto}.groups-add-btn{white-space:nowrap;box-shadow:0 5px 13px #087f831c}
     .groups-management-content{display:grid;grid-template-columns:minmax(230px,.85fr) minmax(0,1.5fr);gap:18px;padding:22px 24px;align-items:stretch}
     .groups-management-picker,.groups-management-actions{padding:17px;border:1px solid #e3ebef;border-radius:15px;background:#fff;min-width:0}
     .groups-management-picker label{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:#29445a;margin-bottom:11px}
@@ -257,7 +258,7 @@
     .groups-management-info{display:grid;place-items:center;flex:0 0 21px;height:21px;border-radius:50%;background:#dcefed;color:#087f83;font-weight:800;font-family:serif}
     .groups-management-footnote p{margin:0;color:#637889;font-size:13px;line-height:1.8}
     @media(max-width:850px){.groups-management-content{grid-template-columns:1fr}.groups-management-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.groups-management-buttons .gm-delete{grid-column:auto}}
-    @media(max-width:520px){.groups-management-heading{padding:18px 15px 15px;gap:10px}.groups-management-titlemark{width:40px;height:40px;flex-basis:40px;border-radius:12px}.groups-management-titlecopy h2{font-size:19px}.groups-management-titlecopy p{font-size:12px}.groups-management-chip{display:none}.groups-management-content{padding:15px;gap:12px}.groups-management-picker,.groups-management-actions{padding:13px}.groups-management-buttons{grid-template-columns:1fr}.groups-management-buttons .gm-action{justify-content:flex-start;padding-inline:14px}.groups-management-footnote{margin:0 15px 16px}}
+    @media(max-width:520px){.groups-management-heading{padding:18px 15px 15px;gap:10px;flex-wrap:wrap}.groups-management-titlemark{width:40px;height:40px;flex-basis:40px;border-radius:12px}.groups-management-titlecopy h2{font-size:19px}.groups-management-titlecopy p{font-size:12px}.groups-management-heading-actions{width:100%;justify-content:flex-start;padding-inline-start:50px}.groups-management-chip{display:none}.groups-add-btn{min-height:40px;padding:9px 13px}.groups-management-content{padding:15px;gap:12px}.groups-management-picker,.groups-management-actions{padding:13px}.groups-management-buttons{grid-template-columns:1fr}.groups-management-buttons .gm-action{justify-content:flex-start;padding-inline:14px}.groups-management-footnote{margin:0 15px 16px}}
 
 </style>
 </head>
@@ -321,14 +322,17 @@
       </div>
     </section>
     <section id="groupsView" class="hidden">
-      <div class="panel" id="groupsListPanel"><div class="panel-head"><div><h2>الحلقات</h2><p class="sub">اختر الحلقة لفتح صفحة تفاصيلها وقائمة طلابها.</p></div><div class="actions"><span class="group-count" id="visibleGroupsCount">— حلقة</span><button class="btn primary" id="openCreateGroupModal" type="button">＋ إضافة حلقة</button></div></div>
+      <div class="panel" id="groupsListPanel"><div class="panel-head"><div><h2>الحلقات</h2><p class="sub">اختر الحلقة لفتح صفحة تفاصيلها وقائمة طلابها.</p></div><div class="actions"><span class="group-count" id="visibleGroupsCount">— حلقة</span></div></div>
         <div class="groups-grid" id="groupsRows"><div class="empty">جارٍ تحميل الحلقات...</div></div>
       </div>
       <div class="panel groups-management-panel" id="groupsManagementPanel">
         <div class="groups-management-heading">
           <div class="groups-management-titlemark" aria-hidden="true">⚙</div>
           <div class="groups-management-titlecopy"><h2>إدارة الحلقات</h2><p>إجراءات الحلقة في مكان واحد، بخطوات واضحة وسريعة.</p></div>
-          <span class="groups-management-chip">إدارة وتنظيم</span>
+          <div class="groups-management-heading-actions">
+            <span class="groups-management-chip">إدارة وتنظيم</span>
+            <button class="btn primary groups-add-btn" id="openCreateGroupModal" type="button">＋ إضافة حلقة</button>
+          </div>
         </div>
         <div class="groups-management-content">
           <div class="groups-management-picker">
@@ -350,7 +354,7 @@
       </div>
       <section id="groupDetailView" class="hidden" aria-live="polite">
         <div class="hidden" aria-hidden="true"><span id="groupDetailSubtitle"></span><span id="groupDetailStudentCount"></span></div>
-        <div class="panel group-detail-panel"><div class="panel-head"><div><button type="button" class="btn secondary group-back-btn" id="backToGroups">← الحلقات</button><h2 id="groupDetailName">طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل .</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
+        <div class="panel group-detail-panel"><div class="panel-head"><div><button type="button" class="btn secondary group-back-btn" id="backToGroups">← العودة للحلقات</button><h2 id="groupDetailName">طلاب الحلقة</h2><p class="sub">تظهر أسماء الطلاب حاليًا، ويمكن إضافة تاريخ التسجيل .</p></div><input id="groupStudentSearch" class="group-student-search" type="search" placeholder="بحث باسم الطالب" aria-label="بحث في طلاب الحلقة"></div>
           <div class="table-wrap"><table class="group-students-table"><thead><tr><th class="group-num-col">#</th><th>اسم الطالب</th><th>المواليد</th><th>محل الإقامة</th><th>رقم الهاتف</th></tr></thead><tbody id="groupStudentsRows"><tr><td colspan="5" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
         </div>
         <div class="panel attendance-panel" id="attendancePanel">
@@ -1213,7 +1217,7 @@ const groupDetailView = $("groupDetailView");
 function showGroupsList(){
   if(currentProfile?.role==="teacher"){
     const nav=$("groupsNav");if(nav)nav.textContent="حلقاتي";
-    const back=$("backToGroups");if(back)back.textContent="← حلقاتي";
+    const back=$("backToGroups");if(back)back.textContent="← العودة لحلقاتي";
   }
   if(groupDetailView) groupDetailView.classList.add("hidden");
   if(groupsListPanel) groupsListPanel.classList.remove("hidden");
