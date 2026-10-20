@@ -566,6 +566,19 @@ function confirmDialog({title="تأكيد العملية",text="هل تريد ا
   });
 }
 function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+// تحديث أرقام النظرة العامة مباشرة بعد تغييرات البيانات.
+async function refreshOverviewCounts(){
+  if(currentProfile?.role!=="manager")return;
+  const [studentsRes,groupsRes,teachersRes]=await Promise.all([
+    db.from("students").select("id",{count:"exact",head:true}),
+    db.from("groups").select("id",{count:"exact",head:true}),
+    db.from("profiles").select("id",{count:"exact",head:true}).eq("role","teacher")
+  ]);
+  if(!studentsRes.error)$("studentsCount").textContent=studentsRes.count??0;
+  if(!groupsRes.error)$("groupsCount").textContent=groupsRes.count??0;
+  if(!teachersRes.error)$("teachersCount").textContent=teachersRes.count??0;
+}
+
 function showView(view){
   ["overview","students","teachers","groups","attendanceReports","statistics"].forEach(name=>$(name+"View").classList.toggle("hidden",name!==view));
   document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
@@ -982,7 +995,7 @@ $("openDeleteStudentModal").addEventListener("click",()=>openStudentManageModal(
 $("manageStudentGroup").addEventListener("change",refreshManageStudentOptions);
 $("manageStudentSelect").addEventListener("change",updateManageStudentActions);
 $("manageEditStudent").addEventListener("click",()=>{const row=window.__studentRows?.[managingStudentId];if(!row){message("يرجى تحديد الطالب أولًا.","error");return;}closeStudentManageModal();openStudentEdit(row,window.__studentGroupNames||{});});
-$("manageDeleteStudent").addEventListener("click",async()=>{const row=window.__studentRows?.[managingStudentId];if(!row){message("يرجى تحديد الطالب أولًا.","error");return;}const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${row.full_name||"هذا الطالب"}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;const id=managingStudentId;try{const {data,error}=await db.from("students").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم يُحذف أي سجل؛ تحقق من صلاحيات الحساب.");closeStudentManageModal();message("تم حذف الطالب بنجاح.","info");await loadStudents();}catch(err){message("تعذر حذف الطالب: "+(err?.message||"خطأ غير معروف"),"error");}});
+$("manageDeleteStudent").addEventListener("click",async()=>{const row=window.__studentRows?.[managingStudentId];if(!row){message("يرجى تحديد الطالب أولًا.","error");return;}const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${row.full_name||"هذا الطالب"}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;const id=managingStudentId;try{const {data,error}=await db.from("students").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم يُحذف أي سجل؛ تحقق من صلاحيات الحساب.");closeStudentManageModal();message("تم حذف الطالب بنجاح.","info");await Promise.all([loadStudents(),refreshOverviewCounts(),loadStatistics()]);}catch(err){message("تعذر حذف الطالب: "+(err?.message||"خطأ غير معروف"),"error");}});
 
 $("closeStudentModal").addEventListener("click",()=>closeStudentEdit());
 $("cancelStudentModal").addEventListener("click",()=>closeStudentEdit());
@@ -1071,7 +1084,7 @@ $("teachersRows").addEventListener("click",async event=>{
  const teacherName=del.dataset.teacherName||"المعلم";
  if(!await confirmDialog({title:"حذف نهائي لحساب المعلم",text:`سيُطلب من الخادم حذف حساب «${teacherName}». يجب أن تتحقق وظيفة الخادم من صلاحية المدير وتعالج العلاقات المرتبطة بأمان. هل تريد المتابعة؟`,confirmText:"طلب الحذف النهائي",danger:true}))return;
  del.disabled=true;
- try{const {data,error}=await db.functions.invoke("delete-teacher",{body:{teacher_id:del.dataset.teacherDelete}});if(error)throw error;if(data?.error)throw new Error(data.error);message(data?.message||"اكتملت عملية حذف المعلم.","info");await Promise.all([loadTeachers(),loadGroups(),loadStatistics()]);}
+ try{const {data,error}=await db.functions.invoke("delete-teacher",{body:{teacher_id:del.dataset.teacherDelete}});if(error)throw error;if(data?.error)throw new Error(data.error);message(data?.message||"اكتملت عملية حذف المعلم.","info");await Promise.all([loadTeachers(),loadGroups(),loadStatistics(),refreshOverviewCounts()]);}
  catch(err){message("لم يكتمل الحذف النهائي. تأكد من نشر Edge Function باسم delete-teacher وإعداد صلاحياتها. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");del.disabled=false;}
 });
 
@@ -1087,7 +1100,7 @@ document.addEventListener("click",async event=>{
   const {count:attendanceCount,error:attendanceErr}=await db.from("attendance_records").select("id",{count:"exact",head:true}).eq("group_id",id);if(attendanceErr && !/does not exist|schema cache/i.test(attendanceErr.message||""))throw attendanceErr;
   if((attendanceCount||0)>0)throw new Error("لا يمكن حذف الحلقة لأنها مرتبطة بسجلات حضور.");
   const {data,error}=await db.from("groups").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم تُحذف الحلقة؛ تحقق من سياسات RLS وصلاحيات قاعدة البيانات.");
-  message("تم حذف الحلقة الفارغة.","info");await Promise.all([loadGroups(),loadGroupOptions(),loadStudents()]);
+  message("تم حذف الحلقة الفارغة.","info");await Promise.all([loadGroups(),loadGroupOptions(),loadStudents(),refreshOverviewCounts(),loadStatistics()]);
  }catch(err){message("تعذر حذف الحلقة: "+(err?.message||"خطأ غير معروف"),"error");btn.disabled=false;}
 });
 async function createGroup(event){
