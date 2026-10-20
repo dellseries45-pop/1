@@ -368,7 +368,7 @@
             <button class="btn danger hidden" type="button" id="resetMonthlyAttendanceBtn">تصفير حضور الشهر المحدد</button>
           </div>
           <div class="attendance-help">اختر التاريخ، ثم حدّد لكل طالب: حاضر أو غائب أو غياب بعذر</div>
-          <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:190px">الحالة</th><th>عنوان الدرس</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="4" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
+          <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:170px">الحالة</th><th>الإنجازات</th><th>ملاحظات</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="5" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
         </div>
       </section>
     </section>
@@ -391,7 +391,7 @@
       </div>
       <div class="panel">
         <div class="panel-head"><h2>نتائج التقرير</h2><span class="group-count" id="attendanceReportRowsCount">0 سجل</span></div>
-        <div class="table-wrap"><table style="min-width:760px"><thead><tr><th>التاريخ</th><th>اسم الطالب</th><th>الحلقة</th><th>الحالة</th><th>الملاحظة</th></tr></thead><tbody id="attendanceReportRows"><tr><td colspan="5" class="empty">اختر الفترة ثم اضغط «عرض التقرير».</td></tr></tbody></table></div>
+        <div class="table-wrap"><table style="min-width:760px"><thead><tr><th>التاريخ</th><th>اسم الطالب</th><th>الحلقة</th><th>الحالة</th><th>الإنجازات</th><th>ملاحظات</th></tr></thead><tbody id="attendanceReportRows"><tr><td colspan="6" class="empty">اختر الفترة ثم اضغط «عرض التقرير».</td></tr></tbody></table></div>
       </div>
     </section>
     <section id="statisticsView" class="hidden">
@@ -669,16 +669,16 @@ async function loadAttendanceReport(){
   await loadAttendanceReportOptions();
   const start=$("reportStartDate").value, end=$("reportEndDate").value;
   if(start&&end&&start>end){message("تاريخ البداية يجب أن يكون قبل تاريخ النهاية.","error");return;}
-  const tbody=$("attendanceReportRows");tbody.innerHTML='<tr><td colspan="5" class="empty">جارٍ إعداد التقرير...</td></tr>';
-  let query=db.from("attendance_records").select("id,student_id,group_id,attendance_date,status,note,marked_by").order("attendance_date",{ascending:false}).limit(5000);
+  const tbody=$("attendanceReportRows");tbody.innerHTML='<tr><td colspan="6" class="empty">جارٍ إعداد التقرير...</td></tr>';
+  let query=db.from("attendance_records").select("id,student_id,group_id,attendance_date,status,achievements,note,marked_by").order("attendance_date",{ascending:false}).limit(5000);
   if(start)query=query.gte("attendance_date",start);
   if(end)query=query.lte("attendance_date",end);
   if($("reportGroupFilter").value)query=query.eq("group_id",$("reportGroupFilter").value);
   if($("reportStatusFilter").value)query=query.eq("status",$("reportStatusFilter").value);
   const {data,error}=await query;
-  if(error){tbody.innerHTML='<tr><td colspan="5" class="empty">تعذر تحميل التقرير. تحقق من صلاحيات قراءة سجلات الحضور.</td></tr>';message("تعذر تحميل تقرير الحضور: "+error.message,"error");return;}
+  if(error){tbody.innerHTML='<tr><td colspan="6" class="empty">تعذر تحميل التقرير. تحقق من صلاحيات قراءة سجلات الحضور.</td></tr>';message("تعذر تحميل تقرير الحضور: "+error.message,"error");return;}
   const records=data||[];
-  if(!records.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا توجد سجلات ضمن الفترة المحددة.</td></tr>';["reportPresentCount","reportAbsentCount","reportExcusedCount"].forEach(id=>$(id).textContent="0");$("attendanceReportRowsCount").textContent="0 سجل";return;}
+  if(!records.length){tbody.innerHTML='<tr><td colspan="6" class="empty">لا توجد سجلات ضمن الفترة المحددة.</td></tr>';["reportPresentCount","reportAbsentCount","reportExcusedCount"].forEach(id=>$(id).textContent="0");$("attendanceReportRowsCount").textContent="0 سجل";return;}
   const studentIds=[...new Set(records.map(r=>r.student_id).filter(Boolean))], groupIds=[...new Set(records.map(r=>r.group_id).filter(Boolean))];
   const [studentsRes,groupsRes]=await Promise.all([
     studentIds.length?db.from("students").select("id,full_name").in("id",studentIds):Promise.resolve({data:[],error:null}),
@@ -693,7 +693,7 @@ async function loadAttendanceReport(){
   $("reportAbsentCount").textContent=filtered.filter(r=>r.status==="absent").length;
   $("reportExcusedCount").textContent=filtered.filter(r=>r.status==="excused").length;
   $("attendanceReportRowsCount").textContent=`${filtered.length} سجل`;
-  tbody.innerHTML=filtered.length?filtered.map(r=>`<tr><td>${escapeHtml(formatLevantineDate(r.attendance_date))}</td><td>${escapeHtml(studentNames[r.student_id]||"طالب غير متاح")}</td><td>${escapeHtml(groupNames[r.group_id]||"حلقة غير متاحة")}</td><td><span class="attendance-status ${escapeHtml(r.status)}">${escapeHtml(reportStatusLabel(r.status))}</span></td><td>${escapeHtml(r.note||"—")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">لا توجد سجلات تطابق اسم الطالب.</td></tr>';
+  tbody.innerHTML=filtered.length?filtered.map(r=>`<tr><td>${escapeHtml(formatLevantineDate(r.attendance_date))}</td><td>${escapeHtml(studentNames[r.student_id]||"طالب غير متاح")}</td><td>${escapeHtml(groupNames[r.group_id]||"حلقة غير متاحة")}</td><td><span class="attendance-status ${escapeHtml(r.status)}">${escapeHtml(reportStatusLabel(r.status))}</span></td><td>${escapeHtml(r.achievements||"—")}</td><td>${escapeHtml(r.note||"—")}</td></tr>`).join(""):'<tr><td colspan="6" class="empty">لا توجد سجلات تطابق اسم الطالب.</td></tr>';
 }
 $("runAttendanceReport").addEventListener("click",loadAttendanceReport);
 $("resetAttendanceReport").addEventListener("click",()=>{
@@ -1255,14 +1255,15 @@ function renderGroupStudents(students){
 }
 function renderAttendanceRows(){
   const tbody=$("attendanceRows");
-  if(!activeGroupStudents.length){tbody.innerHTML='<tr><td colspan="4" class="empty">لا يوجد طلاب في هذه الحلقة.</td></tr>';return;}
+  if(!activeGroupStudents.length){tbody.innerHTML='<tr><td colspan="5" class="empty">لا يوجد طلاب في هذه الحلقة.</td></tr>';return;}
   tbody.innerHTML=activeGroupStudents.map((student,index)=>`<tr data-attendance-student="${student.id}">
     <td><span class="group-student-row-number">${index+1}</span></td>
     <td style="font-weight:700;color:var(--navy)">${escapeHtml(student.full_name||"طالب بلا اسم")}</td>
     <td><select class="attendance-status-select" aria-label="حالة حضور ${escapeHtml(student.full_name||"الطالب")}">
       <option value="present">حاضر</option><option value="absent">غائب</option><option value="excused">غائب بعذر</option>
     </select></td>
-    <td><input class="attendance-note-input" maxlength="500" placeholder="ملاحظة اختيارية" aria-label="ملاحظة الحضور"></td>
+    <td><textarea class="attendance-achievements-input" maxlength="2000" rows="2" placeholder="إنجازات الطالب اليوم" aria-label="إنجازات الطالب"></textarea></td>
+    <td><textarea class="attendance-note-input" maxlength="2000" rows="2" placeholder="ملاحظات اختيارية" aria-label="ملاحظات الحضور"></textarea></td>
   </tr>`).join("");
 }
 async function loadAttendanceForDate(){
@@ -1270,7 +1271,7 @@ async function loadAttendanceForDate(){
   const date=$("attendanceDate").value||todayISO();
   $("attendanceDate").value=date;
   renderAttendanceRows();
-  const {data,error}=await db.from("attendance_records").select("student_id,status,note").eq("group_id",activeGroupId).eq("attendance_date",date);
+  const {data,error}=await db.from("attendance_records").select("student_id,status,achievements,note").eq("group_id",activeGroupId).eq("attendance_date",date);
   if(error){
     message("تعذر تحميل الحضور. تأكد من إنشاء جدول attendance_records وتطبيق سياساته في Supabase. "+error.message,"error");
     return;
@@ -1278,7 +1279,7 @@ async function loadAttendanceForDate(){
   const records=new Map((data||[]).map(r=>[r.student_id,r]));
   document.querySelectorAll("#attendanceRows tr[data-attendance-student]").forEach(row=>{
     const record=records.get(row.dataset.attendanceStudent);
-    if(record){row.querySelector(".attendance-status-select").value=record.status;row.querySelector(".attendance-note-input").value=record.note||"";}
+    if(record){row.querySelector(".attendance-status-select").value=record.status;row.querySelector(".attendance-achievements-input").value=record.achievements||"";row.querySelector(".attendance-note-input").value=record.note||"";}
   });
 }
 async function saveAttendance(){
@@ -1287,7 +1288,7 @@ async function saveAttendance(){
   if(!date){message("اختر تاريخ الحضور أولًا.","error");return;}
   const rows=[...document.querySelectorAll("#attendanceRows tr[data-attendance-student]")];
   if(!rows.length){message("لا يوجد طلاب لحفظ حضورهم.","error");return;}
-  const records=rows.map(row=>({student_id:row.dataset.attendanceStudent,group_id:activeGroupId,attendance_date:date,status:row.querySelector(".attendance-status-select").value,note:row.querySelector(".attendance-note-input").value.trim()||null,marked_by:currentProfile.id}));
+  const records=rows.map(row=>({student_id:row.dataset.attendanceStudent,group_id:activeGroupId,attendance_date:date,status:row.querySelector(".attendance-status-select").value,achievements:row.querySelector(".attendance-achievements-input").value.trim()||null,note:row.querySelector(".attendance-note-input").value.trim()||null,marked_by:currentProfile.id}));
   const button=$("saveAttendanceBtn");button.disabled=true;const oldText=button.textContent;button.textContent="جارٍ الحفظ...";
   const {error}=await db.from("attendance_records").upsert(records,{onConflict:"student_id,attendance_date"});
   button.disabled=false;button.textContent=oldText;
@@ -1303,32 +1304,27 @@ async function exportMonthlyAttendance(){
   const endDate=new Date(Number(monthValue.slice(0,4)),Number(monthValue.slice(5,7)),1).toISOString().slice(0,10);
   const button=$("exportMonthlyAttendanceBtn");const oldText=button.textContent;button.disabled=true;button.textContent="جارٍ تجهيز الملف...";
   try{
-    const {data,error}=await db.from("attendance_records").select("student_id,attendance_date,status,note").eq("group_id",activeGroupId).gte("attendance_date",startDate).lt("attendance_date",endDate).order("attendance_date",{ascending:true});
+    const {data,error}=await db.from("attendance_records").select("student_id,attendance_date,status,achievements,note").eq("group_id",activeGroupId).gte("attendance_date",startDate).lt("attendance_date",endDate).order("attendance_date",{ascending:true});
     if(error)throw error;
     const records=data||[];
     if(!records.length){message("لا توجد سجلات حضور محفوظة لهذه الحلقة في الشهر المحدد.","error");return;}
-    const recordedDates=[...new Set(records.map(r=>r.attendance_date))].sort();
-    const students=[...(activeGroupStudents||[])].sort((a,b)=>(a.full_name||"").localeCompare(b.full_name||"","ar"));
-    const byKey=new Map(records.map(r=>[r.student_id+"|"+r.attendance_date,r]));
+    const students=[...(activeGroupStudents||[])];
+    const studentNames=new Map(students.map(student=>[student.id,student.full_name||"طالب بلا اسم"]));
     const statusLabel={present:"حاضر",absent:"غائب",excused:"غائب بعذر"};
     const esc=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+    // صف مستقل لكل طالب في كل تاريخ مسجل، بدل وضع أيام الشهر في أعمدة متجاورة.
     const rows=[];
-    rows.push(["اسم الطالب",...recordedDates.map(d=>d),"إجمالي حاضر","إجمالي غائب","إجمالي غياب بعذر","ملاحظات"].map(esc).join(";"));
-    for(const student of students){
-      const studentRecords=recordedDates.map(date=>byKey.get(student.id+"|"+date));
-      const statuses=studentRecords.map(r=>r?statusLabel[r.status]||r.status:"");
-      const present=studentRecords.filter(r=>r?.status==="present").length;
-      const absent=studentRecords.filter(r=>r?.status==="absent").length;
-      const excused=studentRecords.filter(r=>r?.status==="excused").length;
-      const notes=studentRecords.map((r,i)=>r?.note?recordedDates[i]+": "+r.note:"").filter(Boolean).join(" | ");
-      rows.push([student.full_name||"طالب بلا اسم",...statuses,present,absent,excused,notes].map(esc).join(";"));
+    rows.push(["التاريخ","اسم الطالب","حالة الحضور","الإنجازات","ملاحظات"].map(esc).join(";"));
+    records.sort((a,b)=>a.attendance_date.localeCompare(b.attendance_date)||(studentNames.get(a.student_id)||"").localeCompare(studentNames.get(b.student_id)||"","ar"));
+    for(const record of records){
+      rows.push([record.attendance_date,studentNames.get(record.student_id)||"طالب غير متاح",statusLabel[record.status]||record.status,record.achievements||"",record.note||""].map(esc).join(";"));
     }
     const csv="\uFEFF"+rows.join("\r\n");
     const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
     const url=URL.createObjectURL(blob);const a=document.createElement("a");
-    a.href=url;a.download="تقرير-حضور-"+(($("groupDetailName").textContent||"حلقة").trim().replace(/[\\/:*?"<>|]/g,"-")||"حلقة")+"-"+monthValue+".csv";
+    a.href=url;a.download="تقرير-حضور-يومي-"+(( $("groupDetailName").textContent||"حلقة").trim().replace(/[\\/:*?"<>|]/g,"-")||"حلقة")+"-"+monthValue+".csv";
     document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-    message("تم تصدير السجلات المسجلة فقط. افتح الملف في Excel، ويمكنك حفظه بصيغة XLSX.","success");
+    message("تم تصدير الحضور كسجل يومي واضح؛ كل صف يمثل طالبًا في تاريخ محدد، مع الإنجازات والملاحظات. افتح الملف في Excel ويمكنك حفظه بصيغة XLSX.","success");
   }catch(err){message("تعذر تصدير الحضور الشهري: "+(err?.message||"خطأ غير معروف"),"error");}
   finally{button.disabled=false;button.textContent=oldText;}
 }
