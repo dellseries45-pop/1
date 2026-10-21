@@ -260,6 +260,38 @@
     @media(max-width:850px){.groups-management-content{grid-template-columns:1fr}.groups-management-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.groups-management-buttons .gm-delete{grid-column:auto}}
     @media(max-width:520px){.groups-management-heading{padding:18px 15px 15px;gap:10px;flex-wrap:wrap}.groups-management-titlemark{width:40px;height:40px;flex-basis:40px;border-radius:12px}.groups-management-titlecopy h2{font-size:19px}.groups-management-titlecopy p{font-size:12px}.groups-management-heading-actions{width:100%;justify-content:flex-start;padding-inline-start:50px}.groups-management-chip{display:none}.groups-add-btn{min-height:40px;padding:9px 13px}.groups-management-content{padding:15px;gap:12px}.groups-management-picker,.groups-management-actions{padding:13px}.groups-management-buttons{grid-template-columns:1fr}.groups-management-buttons .gm-action{justify-content:flex-start;padding-inline:14px}.groups-management-footnote{margin:0 15px 16px}}
 
+
+    /* === تنسيق إدارة الطلاب وفق الصورة المرجعية، مع إبقاء الخلفية والهوية وبقية الواجهة دون تغيير === */
+    #studentsView{direction:rtl}
+    #studentsView #addStudentPanel{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin-bottom:12px!important}
+    #studentsView .student-management-head{padding:0 0 12px;border:0;justify-content:flex-end}
+    #studentsView .student-management-title{justify-content:flex-end;gap:12px;text-align:right}
+    #studentsView .student-management-title h2{font-size:clamp(24px,2.2vw,36px);font-weight:900;color:#0c3555;letter-spacing:-.5px}
+    #studentsView .student-management-title .sub{font-size:13px;color:#17466b}
+    #studentsView .student-management-actions{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;margin:0;padding:18px 20px 12px;background:rgba(255,255,255,.96);border:1px solid #d8e7f2;border-bottom:0;border-radius:17px 17px 0 0}
+    #studentsView .student-management-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:55px;padding:12px 20px;border-radius:13px;font-size:15px;font-weight:800;white-space:nowrap;box-shadow:none;transition:transform .18s,filter .18s}
+    #studentsView .student-management-actions .btn:hover{transform:translateY(-1px);filter:brightness(1.03)}
+    #studentsView .student-management-actions #openAddStudentModal{background:linear-gradient(135deg,#079e8e,#008e83);color:#fff}
+    #studentsView .student-management-actions #openManageStudentModal{background:linear-gradient(135deg,#347ff0,#2870e8);color:#fff;border:0}
+    #studentsView .student-management-actions #openTransferStudentModal{background:#eef5ff;color:#245a91;border:1px solid #d3e4f7}
+    #studentsView .student-management-actions #openDeleteStudentModal{background:linear-gradient(135deg,#ff5368,#f33751);color:#fff;border:0}
+    #studentsView .student-management-tools{display:grid;grid-template-columns:minmax(190px,1fr) minmax(220px,280px);gap:12px;margin:0;padding:12px 20px 18px;border:1px solid #d8e7f2;border-top:0;border-radius:0 0 17px 17px;background:rgba(255,255,255,.96)}
+    #studentsView .student-management-tools select{grid-column:1;grid-row:1;min-width:0;width:100%;min-height:55px;border:1px solid #cbdff0;border-radius:12px;background:#fff;color:#123d62;padding:12px 16px;font-weight:800}
+    #studentsView .student-management-tools input{grid-column:2;grid-row:1;min-width:0;width:100%;min-height:55px;border:1px solid #cbdff0;border-radius:12px;background:#fff;color:#123d62;padding:12px 16px;font-weight:600}
+    #studentsView .student-management-tools #searchStudents{display:none}
+    #studentsView .student-list-panel{padding:0!important;margin-top:0!important;border:1px solid #d8e7f2!important;border-radius:17px!important;background:rgba(255,255,255,.97)!important;box-shadow:0 8px 28px rgba(20,65,95,.06)!important;overflow:hidden}
+    #studentsView .student-table-wrap{margin:0;border:0;border-radius:17px;background:transparent;overflow-x:auto}
+    #studentsView .student-table{width:100%;min-width:900px;table-layout:auto;border-collapse:separate;border-spacing:0;background:transparent}
+    #studentsView .student-table thead th{background:linear-gradient(180deg,#f5fafc,#edf5f8);color:#123e65;font-size:14px;font-weight:900;padding:17px 14px;border-bottom:1px solid #dceaf2;text-align:right;vertical-align:middle}
+    #studentsView .student-table tbody td{padding:14px;border-bottom:1px solid #e1edf4;color:#143d61;font-size:14px;vertical-align:middle;background:rgba(255,255,255,.72)}
+    #studentsView .student-table tbody tr:hover td{background:#f4fafc}
+    #studentsView .student-table tbody tr:last-child td{border-bottom:0}
+    #studentsView .student-table tbody td:first-child{font-weight:800;color:#0e3556}
+    #studentsView .student-table .group-pill,#studentsView .student-table .tag{display:inline-block;padding:5px 11px;border-radius:18px;background:#e7f7ed;color:#13834a;font-size:12px;font-weight:800}
+    #studentsView .student-table button{min-width:38px;min-height:38px;border-radius:10px}
+    @media(max-width:1050px){#studentsView .student-management-actions{flex-wrap:wrap}#studentsView .student-management-actions .btn{flex:1 1 145px}}
+    @media(max-width:650px){#studentsView .student-management-actions{padding:14px 12px 10px;display:grid;grid-template-columns:1fr 1fr}#studentsView .student-management-actions .btn{min-width:0;min-height:46px;padding:9px;font-size:13px}#studentsView .student-management-tools{padding:10px 12px 14px;grid-template-columns:1fr}#studentsView .student-management-tools select,#studentsView .student-management-tools input{grid-column:1;grid-row:auto;min-height:48px}#studentsView .student-management-title{align-items:flex-end}#studentsView .student-management-title .sub{font-size:12px}}
+
 </style>
 </head>
 <body>
