@@ -450,7 +450,7 @@
     <header class="modal-head"><div><h2 id="transferStudentTitle">نقل طالب بين الحلقات</h2><p>اختر الحلقة الحالية والطالب والحلقة الجديدة.</p></div><button type="button" class="modal-close" id="closeTransferStudentModal" aria-label="إغلاق">×</button></header>
     <form id="transferStudentForm">
       <div class="modal-body"><div class="modal-grid">
-        <div class="modal-field"><label for="transferFromGroup">الحلقة الحالية *</label><select id="transferFromGroup" required><option value="">اختر الحلقة الحالية</option></select></div>
+        <div class="modal-field"><label for="transferFromGroup">الحلقة الحالية *</label><select id="transferFromGroup" required><option value="">اختر الحلقة الحالية</option><option value="__unassigned__">بدون حلقة</option></select></div>
         <div class="modal-field"><label for="transferStudentSelect">الطالب *</label><select id="transferStudentSelect" required disabled><option value="">اختر الحلقة أولاً</option></select></div>
         <div class="modal-field wide"><label for="transferToGroup">الحلقة الجديدة *</label><select id="transferToGroup" required><option value="">اختر الحلقة الجديدة</option></select></div>
       </div><p id="transferStudentStatus" class="modal-hint">سيتم تغيير الحلقة المرتبطة بالطالب فقط.</p></div>
@@ -848,33 +848,39 @@ async function openTransferStudentModal(){
   const {data,error}=await query;
   if(error){message("تعذر تحميل الحلقات المتاحة: "+error.message,"error");return;}
   const groups=data||[];const options='<option value="">اختر الحلقة</option>'+groups.map(g=>`<option value="${escapeHtml(g.id)}">${escapeHtml(g.name||"حلقة بدون اسم")}</option>`).join("");
-  from.innerHTML=options;to.innerHTML=options;
-  $("transferStudentStatus").textContent=currentProfile.role==="manager"?"يمكنك النقل بين أي حلقتين، حتى إن كان المعلمان مختلفين.":"يمكنك النقل بين الحلقات المسندة إلى حسابك فقط.";
-  $("saveTransferStudentBtn").disabled=groups.length<2;
-  if(groups.length<2)$("transferStudentStatus").textContent="لا توجد حلقتان متاحتان على الأقل لإتمام النقل.";
+  from.innerHTML='<option value="">اختر الحلقة الحالية</option><option value="__unassigned__">بدون حلقة</option>'+groups.map(g=>`<option value="${escapeHtml(g.id)}">${escapeHtml(g.name||"حلقة بدون اسم")}</option>`).join("");to.innerHTML=options;
+  $("transferStudentStatus").textContent=currentProfile.role==="manager"?"يمكنك النقل بين أي حلقتين، حتى إن كان المعلمان مختلفين.":"يمكنك نقل الطلاب الذين أضفتهم بدون حلقة إلى إحدى حلقاتك، أو النقل بين الحلقات المسندة إلى حسابك.";
+  $("saveTransferStudentBtn").disabled=groups.length<1;
+  if(groups.length<1)$("transferStudentStatus").textContent="لا توجد حلقات متاحة للنقل إليها.";
 }
 async function loadTransferStudents(){
   const groupId=$("transferFromGroup").value,select=$("transferStudentSelect");select.disabled=true;select.innerHTML='<option value="">جارٍ تحميل الطلاب...</option>';
   if(!groupId){select.innerHTML='<option value="">اختر الحلقة أولاً</option>';return;}
-  const {data,error}=await db.from("students").select("id,full_name").eq("group_id",groupId).order("full_name").limit(1000);
-  if(error){select.innerHTML='<option value="">تعذر تحميل الطلاب</option>';message("تعذر تحميل طلاب الحلقة: "+error.message,"error");return;}
+  let query=db.from("students").select("id,full_name,created_by,group_id");
+  if(groupId==="__unassigned__"){query=query.is("group_id",null);if(currentProfile.role==="teacher")query=query.eq("created_by",currentProfile.id);}
+  else query=query.eq("group_id",groupId);
+  const {data,error}=await query.order("full_name").limit(1000);
+  if(error){select.innerHTML='<option value="">تعذر تحميل الطلاب</option>';message("تعذر تحميل الطلاب: "+error.message,"error");return;}
   select.innerHTML='<option value="">اختر الطالب</option>'+(data||[]).map(st=>`<option value="${escapeHtml(st.id)}">${escapeHtml(st.full_name||"طالب بلا اسم")}</option>`).join("");select.disabled=!(data||[]).length;
-  if(!data?.length)select.innerHTML='<option value="">لا يوجد طلاب في هذه الحلقة</option>';
-  [...$("transferToGroup").options].forEach(o=>{o.disabled=!!groupId&&o.value===groupId;});
+  if(!data?.length)select.innerHTML='<option value="">لا يوجد طلاب ضمن هذا الاختيار</option>';
+  [...$("transferToGroup").options].forEach(o=>{o.disabled=!!groupId&&groupId!=="__unassigned__"&&o.value===groupId;});
 }
 async function saveStudentTransfer(event){
   event.preventDefault();const from=$("transferFromGroup").value,studentId=$("transferStudentSelect").value,to=$("transferToGroup").value;
   if(!from||!studentId||!to){message("اختر الحلقة الحالية والطالب والحلقة الجديدة.","error");return;}
-  if(from===to){message("اختر حلقة مختلفة عن الحلقة الحالية.","error");return;}
+  if(from!=="__unassigned__"&&from===to){message("اختر حلقة مختلفة عن الحلقة الحالية.","error");return;}
   if(currentProfile?.role==="teacher"){
-    const {data:allowed,error}=await db.from("groups").select("id").in("id",[from,to]).eq("teacher_id",currentProfile.id);
-    if(error||new Set((allowed||[]).map(g=>g.id)).size!==2){message("يمكن للمعلم نقل الطالب بين حلقاته المسندة إليه فقط.","error");return;}
+    const {data:allowed,error}=await db.from("groups").select("id").in("id",from==="__unassigned__"?[to]:[from,to]).eq("teacher_id",currentProfile.id);
+    if(error||new Set((allowed||[]).map(g=>g.id)).size!==(from==="__unassigned__"?1:2)){message("يمكن للمعلم نقل الطالب الذي أضافه بدون حلقة إلى إحدى حلقاته، أو النقل بين حلقاته المسندة إليه فقط.","error");return;}
+    if(from==="__unassigned__"){const {data:student,error:studentError}=await db.from("students").select("id").eq("id",studentId).is("group_id",null).eq("created_by",currentProfile.id).maybeSingle();if(studentError||!student){message("يمكنك نقل الطلاب الذين أضفتهم بنفسك وهم بدون حلقة فقط.","error");return;}}
   }
   const destName=$("transferToGroup").selectedOptions[0]?.textContent||"الحلقة الجديدة";
   if(!await confirmDialog({title:"تأكيد نقل الطالب",text:`هل تريد نقل الطالب إلى «${destName}»؟`,confirmText:"نعم، انقل الطالب"}))return;
   const btn=$("saveTransferStudentBtn");btn.disabled=true;btn.textContent="جارٍ النقل...";
   try{
-    const {data,error}=await db.from("students").update({group_id:to}).eq("id",studentId).eq("group_id",from).select("id,group_id").maybeSingle();
+    let transferQuery=db.from("students").update({group_id:to}).eq("id",studentId);
+    if(from==="__unassigned__"){transferQuery=transferQuery.is("group_id",null);if(currentProfile.role==="teacher")transferQuery=transferQuery.eq("created_by",currentProfile.id);}else transferQuery=transferQuery.eq("group_id",from);
+    const {data,error}=await transferQuery.select("id,group_id").maybeSingle();
     if(error)throw error;if(!data||data.group_id!==to)throw new Error("لم يتم نقل الطالب. قد تمنع سياسات الصلاحيات هذا النقل.");
     setTransferStudentModal(false);message("تم نقل الطالب إلى الحلقة الجديدة بنجاح.","info");
     await Promise.all([loadStudents(),loadGroups(),loadStatistics(),loadGroupOptions()]);
@@ -968,7 +974,7 @@ $("studentManageBackdrop").addEventListener("click",e=>{if(e.target===$("student
 function refreshManageStudentOptions(){
  const groupId=$("manageStudentGroup").value, select=$("manageStudentSelect"), rows=Object.values(window.__studentRows||{});
  const current=select.value;
- const filtered=rows.filter(row=>!groupId||(row.group_id||"")===groupId);
+ const filtered=rows.filter(row=>!groupId||(groupId==="__unassigned__"?!row.group_id:(row.group_id||"")===groupId));
  select.innerHTML='<option value="">اختر الطالب</option>'+filtered.map(row=>`<option value="${escapeHtml(row.id)}">${escapeHtml(row.full_name||"بلا اسم")} · ${escapeHtml(row.group_id?(window.__studentGroupNames?.[row.group_id]||"حلقة غير متاحة"):"بدون حلقة")}</option>`).join("");
  if(filtered.some(row=>row.id===current))select.value=current;
  updateManageStudentActions();
@@ -979,13 +985,13 @@ function updateManageStudentActions(){
  const ownUnassigned=!!row&&!row.group_id&&row.created_by===currentProfile?.id;
  const assigned=!!row?.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;
  const canEdit=!!row&&(currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&row.created_by===currentProfile.id&&(ownUnassigned||assigned)));
- const canDelete=!!row&&(currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned));
+ const canDelete=!!row&&(currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&(assigned||ownUnassigned)));
  $("manageEditStudent").classList.toggle("hidden",!canEdit);$("manageDeleteStudent").classList.toggle("hidden",!canDelete);
  $("studentManageTitle").textContent=row?"إدارة الطالب: "+(row.full_name||"بلا اسم"):"إدارة الطلاب";
  $("manageStudentStatus").textContent=!row?"اختر الحلقة ثم الطالب، وبعدها اختر الإجراء المطلوب.":(!canEdit&&!canDelete?"لا تتوفر لك صلاحية تعديل هذا الطالب أو حذفه.":"اختر الإجراء المطلوب للطالب المحدد.");
 }
 function openStudentManageModal(action){
- $("manageStudentGroup").innerHTML='<option value="">كل الحلقات</option>'+Object.entries(window.__studentGroupNames||{}).map(([id,name])=>`<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`).join("");
+ $("manageStudentGroup").innerHTML='<option value="">كل الحلقات</option><option value="__unassigned__">بدون حلقة</option>'+Object.entries(window.__studentGroupNames||{}).map(([id,name])=>`<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`).join("");
  $("manageStudentGroup").value="";$("manageStudentSelect").value="";refreshManageStudentOptions();
  $("manageStudentStatus").textContent=action==="delete"?"اختر الحلقة والطالب الذي تريد حذفه.":"اختر الحلقة والطالب الذي تريد تعديل بياناته.";
  setStudentManageModal(true);
@@ -995,7 +1001,7 @@ $("openDeleteStudentModal").addEventListener("click",()=>openStudentManageModal(
 $("manageStudentGroup").addEventListener("change",refreshManageStudentOptions);
 $("manageStudentSelect").addEventListener("change",updateManageStudentActions);
 $("manageEditStudent").addEventListener("click",()=>{const row=window.__studentRows?.[managingStudentId];if(!row){message("يرجى تحديد الطالب أولًا.","error");return;}closeStudentManageModal();openStudentEdit(row,window.__studentGroupNames||{});});
-$("manageDeleteStudent").addEventListener("click",async()=>{const row=window.__studentRows?.[managingStudentId];if(!row){message("يرجى تحديد الطالب أولًا.","error");return;}const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&assigned);if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${row.full_name||"هذا الطالب"}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;const id=managingStudentId;try{const {data,error}=await db.from("students").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم يُحذف أي سجل؛ تحقق من صلاحيات الحساب.");closeStudentManageModal();message("تم حذف الطالب بنجاح.","info");await Promise.all([loadStudents(),refreshOverviewCounts(),loadStatistics()]);}catch(err){message("تعذر حذف الطالب: "+(err?.message||"خطأ غير معروف"),"error");}});
+$("manageDeleteStudent").addEventListener("click",async()=>{const row=window.__studentRows?.[managingStudentId];if(!row){message("يرجى تحديد الطالب أولًا.","error");return;}const assigned=!!row.group_id&&window.__studentGroupOwners?.[row.group_id]===currentProfile?.id;const ownUnassigned=!row.group_id&&row.created_by===currentProfile?.id;const canDelete=currentProfile?.role==="manager"||(currentProfile?.role==="teacher"&&(assigned||ownUnassigned));if(!canDelete){message("لا تملك صلاحية حذف بيانات هذا الطالب.","error");return;}if(!await confirmDialog({title:"تأكيد حذف الطالب",text:`هل تريد حذف «${row.full_name||"هذا الطالب"}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.`,confirmText:"نعم، احذف الطالب",danger:true}))return;const id=managingStudentId;try{const {data,error}=await db.from("students").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم يُحذف أي سجل؛ تحقق من صلاحيات الحساب.");closeStudentManageModal();message("تم حذف الطالب بنجاح.","info");await Promise.all([loadStudents(),refreshOverviewCounts(),loadStatistics()]);}catch(err){message("تعذر حذف الطالب: "+(err?.message||"خطأ غير معروف"),"error");}});
 
 $("closeStudentModal").addEventListener("click",()=>closeStudentEdit());
 $("cancelStudentModal").addEventListener("click",()=>closeStudentEdit());
