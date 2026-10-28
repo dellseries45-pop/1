@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#10283f">
+
   <title>لوحة التحكم | أكاديمية تزكى</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{--navy:#10283f;--teal:#078b91;--gold:#d5ad62;--bg:#f3f6fa;--text:#19334b;--muted:#718096;--border:#dce4ed;--danger:#c94350}
-    *{box-sizing:border-box}body{margin:0;font-family:"Tajawal",sans-serif;background:#f7f7f2;color:var(--text);position:relative;isolation:isolate}
+    *{box-sizing:border-box}body{margin:0;font-family:"Tajawal",sans-serif;background:#f7f7f2 url("https://i.imgur.com/JxVjnIo.jpg") center/cover fixed no-repeat;color:var(--text);position:relative;isolation:isolate}
     .shell{position:relative}
     button,input,select{font:inherit}button{cursor:pointer}.shell{min-height:100vh;display:grid;grid-template-columns:260px 1fr}
     aside{background:var(--navy);color:white;padding:25px 18px}.brand{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:800;padding:4px 6px 17px;border-bottom:1px solid #ffffff25}.brand span{color:var(--gold)}.brand-logo{width:54px;height:54px;object-fit:cover;border-radius:50%;background:#fff;border:2px solid #dfb75f;box-shadow:0 4px 14px #0002;flex-shrink:0}
@@ -28,7 +29,7 @@
     .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.field{display:grid;gap:7px}.field label{font-size:14px;font-weight:700}.field input,.field select{width:100%}
 .hidden{display:none!important}
 .footer{
-  color:#064e52;
+  color:#ffffff;
   font-family:"Tajawal",sans-serif;
   font-size:16px;
   font-weight:800;
@@ -57,7 +58,7 @@
 
     .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(12,31,49,.56);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
     .modal-backdrop.hidden{display:none!important}
-    .edit-modal{width:min(980px,calc(100vw - 24px));max-height:calc(100dvh - 16px);overflow:hidden;background:#fff;border:1px solid #e4ebf2;border-radius:20px;box-shadow:0 25px 80px #0b203744;animation:modalIn .18s ease-out}
+    .edit-modal{width:min(620px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e4ebf2;border-radius:20px;box-shadow:0 25px 80px #0b203744;animation:modalIn .18s ease-out}
     @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
     .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 20px 12px;border-bottom:1px solid #edf1f5}
     .modal-head h2{margin:0;color:var(--navy);font-size:21px}.modal-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
@@ -74,18 +75,8 @@
     .modal-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 20px 11px;border-top:1px solid #edf1f5}
     .save-state{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}.spinner{width:16px;height:16px;border:2px solid #b8dedd;border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    #studentEditBackdrop .edit-modal{width:min(1040px,calc(100vw - 24px))}
-    #studentEditBackdrop .modal-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    .modal-body{padding-top:10px;padding-bottom:10px}
-    .modal-field{gap:3px}
-    .modal-field label{font-size:13px}
-    .modal-field input,.modal-field select,.modal-field textarea{padding:7px 9px;min-height:36px}
-    .modal-hint{line-height:1.4}
-    .confirm-backdrop{padding:12px;overflow:hidden}
-    .confirm-card{max-height:calc(100dvh - 24px);overflow:hidden}
-    @media(max-width:700px){#studentEditBackdrop .modal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     body.modal-open{overflow:hidden}
-    @media(max-width:600px){.modal-backdrop{padding:6px;align-items:center}.edit-modal{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);border-radius:16px}.modal-head,.modal-body{padding:12px 14px}.modal-foot{padding:10px 14px;align-items:center;flex-direction:row}.modal-grid{grid-template-columns:1fr}.modal-grid .wide{grid-column:auto}.modal-foot .actions{width:100%}.modal-foot .btn{flex:1}}
+    @media(max-width:600px){.modal-backdrop{padding:8px;align-items:center}.edit-modal{max-height:calc(100dvh - 16px);border-radius:16px}.modal-head,.modal-body{padding:12px 14px}.modal-foot{padding:10px 14px;align-items:center;flex-direction:row}.modal-grid{grid-template-columns:1fr}.modal-grid .wide{grid-column:auto}.modal-foot .actions{width:100%}.modal-foot .btn{flex:1}}
 
     @media(max-width:850px){.shell{grid-template-columns:1fr}aside{padding:15px}.brand{padding-bottom:14px}.nav{display:flex;overflow:auto;margin-top:12px}.nav button{white-space:nowrap}.side-note{display:none}main{padding:17px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
 
@@ -392,6 +383,7 @@
             <button class="btn primary" type="button" id="saveAttendanceBtn">حفظ الحضور</button>
             <div class="field" style="min-width:150px"><label for="attendanceExportMonth">شهر التصدير</label><input id="attendanceExportMonth" type="month" lang="en-US" dir="ltr" style="text-align:left;direction:ltr;font-family:Tajawal,sans-serif"></div>
             <button class="btn secondary" type="button" id="exportMonthlyAttendanceBtn">تصدير الحضور الشهري Excel</button>
+            <button class="btn danger hidden" type="button" id="resetMonthlyAttendanceBtn">تصفير حضور الشهر المحدد</button>
           </div>
           <div class="attendance-help">اختر التاريخ، ثم حدّد لكل طالب: حاضر أو غائب أو غياب بعذر</div>
           <div class="table-wrap" style="margin-top:14px"><table class="attendance-table"><thead><tr><th style="width:64px">#</th><th>اسم الطالب</th><th style="width:170px">الحالة</th><th>الإنجازات</th><th>ملاحظات</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="5" class="empty">اختر حلقة لعرض الطلاب.</td></tr></tbody></table></div>
@@ -648,7 +640,9 @@ async function requireProfile(){
   const welcomeEl=$("welcome");if(welcomeEl)welcomeEl.textContent=welcomeText;
   const sidebarWelcome=$("sidebarWelcome");if(sidebarWelcome)sidebarWelcome.textContent=welcomeText;
   if(profile.role==="manager"){
+    $("resetMonthlyAttendanceBtn")?.classList.remove("hidden");
   }else{
+    $("resetMonthlyAttendanceBtn")?.classList.add("hidden");
     $("createTeacherPanel").classList.add("hidden");
     // المعلم يمكنه إضافة طلابه؛ وتحدد سياسات RLS ما يسمح به فعليًا.
     document.querySelector('[data-view="teachers"]').classList.add("hidden");
@@ -659,28 +653,40 @@ async function requireProfile(){
   await loadGroupOptions();
   return true;
 }
-async function loadGroupOptions(){
+let cachedGroupsForDropdowns=null;
+let groupOptionsLoadPromise=null;
+async function loadGroupOptions(forceRefresh=false){
   const select=$("newStudentGroup");
   const filter=$("studentGroupFilter");
+  const preserveAddValue=select.value;
+  const preserveFilterValue=filter.value;
   select.innerHTML='<option value="">بدون حلقة</option>';
-  filter.innerHTML='<option value="">اختر الحلقة لعرض الطلاب</option><option value="all">كل الحلقات</option><option value="unassigned">بدون حلقة</option>';
-  const {data,error}=await db.from("groups").select("id,name").order("name").limit(200);
-  if(error){
-    message("تعذر تحميل قائمة الحلقات. يمكنك إضافة الطالب بدون حلقة. التفاصيل: "+error.message,"error");
-    return;
+  filter.innerHTML='<option value="">اختر الحلقة لعرض الطلاب</option><option value="all">كل الحلقات</option>';
+  if(!cachedGroupsForDropdowns||forceRefresh){
+    if(!groupOptionsLoadPromise){
+      groupOptionsLoadPromise=(async()=>{
+        const {data,error}=await db.from("groups").select("id,name,teacher_id").order("name").limit(500);
+        if(error)throw error;
+        cachedGroupsForDropdowns=(data||[]).filter(group=>group&&group.id);
+        return cachedGroupsForDropdowns;
+      })().finally(()=>{groupOptionsLoadPromise=null;});
+    }
+    try{await groupOptionsLoadPromise;}catch(error){
+      message("تعذر تحميل قائمة الحلقات. يمكنك إضافة الطالب بدون حلقة. التفاصيل: "+(error?.message||"خطأ غير معروف"),"error");
+      return;
+    }
   }
-  for(const group of (data||[])){
-    if(!group.id) continue;
+  const visibleGroups=currentProfile?.role==="teacher"?cachedGroupsForDropdowns.filter(group=>group.teacher_id===currentProfile.id):cachedGroupsForDropdowns;
+  window.__allGroups=visibleGroups;
+  window.__studentGroupNames=Object.fromEntries(visibleGroups.map(group=>[group.id,group.name||("حلقة "+group.id)]));
+  window.__studentGroupOwners=Object.fromEntries(visibleGroups.map(group=>[group.id,group.teacher_id]));
+  for(const group of visibleGroups){
     const label=group.name||group.group_name||group.title||("حلقة "+group.id);
-    const addOption=document.createElement("option");
-    addOption.value=group.id;
-    addOption.textContent=label;
-    select.appendChild(addOption);
-    const filterOption=document.createElement("option");
-    filterOption.value=group.id;
-    filterOption.textContent=label;
-    filter.appendChild(filterOption);
+    const addOption=document.createElement("option");addOption.value=group.id;addOption.textContent=label;select.appendChild(addOption);
+    const filterOption=document.createElement("option");filterOption.value=group.id;filterOption.textContent=label;filter.appendChild(filterOption);
   }
+  if([...select.options].some(option=>option.value===preserveAddValue))select.value=preserveAddValue;
+  if([...filter.options].some(option=>option.value===preserveFilterValue))filter.value=preserveFilterValue;
 }
 let reportOptionsLoaded=false;
 async function loadAttendanceReportOptions(){
@@ -783,49 +789,23 @@ async function loadStudents(){
   const tbody=$("studentsRows");
   const selectedGroup=$("studentGroupFilter").value;
   if(!selectedGroup){
-    tbody.innerHTML='<tr><td colspan="9" class="empty">اختر الحلقة أو «كل الحلقات» أو «بدون حلقة» لعرض بيانات الطلاب.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="9" class="empty">اختر الحلقة أو «كل الحلقات» لعرض بيانات الطلاب.</td></tr>';
     window.__studentRows={};
     return;
   }
   tbody.innerHTML='<tr><td colspan="9" class="empty">جارٍ تحميل الطلاب...</td></tr>';
-  let assignedGroupIds=[];
-  if(currentProfile?.role==="teacher"){
-    const {data:assignedGroups,error:assignedGroupsError}=await db.from("groups").select("id").eq("teacher_id",currentProfile.id);
-    if(assignedGroupsError){
-      tbody.innerHTML='<tr><td colspan="9" class="empty">تعذر تحميل الحلقات المسندة إليك.</td></tr>';
-      message("تعذر تحميل الحلقات المسندة إليك: "+assignedGroupsError.message,"error");
-      return;
-    }
-    assignedGroupIds=(assignedGroups||[]).map(group=>group.id).filter(Boolean);
-    if(selectedGroup!=="unassigned" && selectedGroup!=="all" && !assignedGroupIds.includes(selectedGroup)){
-      tbody.innerHTML='<tr><td colspan="9" class="empty">هذه الحلقة غير مسندة إلى حسابك.</td></tr>';
-      window.__studentRows={};
-      return;
-    }
-    if(selectedGroup==="all" && !assignedGroupIds.length){
-      tbody.innerHTML='<tr><td colspan="9" class="empty">لا توجد حلقات مسندة إليك.</td></tr>';
-      window.__studentRows={};
-      return;
-    }
-  }
-  let query = db.from("students")
+let query = db.from("students")
     .select("id, full_name, group_id, group_type, registration_date, created_by, notes, gender, birth_date, residence, phone, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
   if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
-  if(selectedGroup==="unassigned"){
-    query=query.is("group_id",null);
-    if(currentProfile?.role==="teacher") query=query.eq("created_by",currentProfile.id);
-  }else if(currentProfile?.role==="teacher"){
-    query=query.in("group_id",assignedGroupIds);
-  }
-  if(selectedGroup && selectedGroup!=="all" && selectedGroup!=="unassigned") query=query.eq("group_id",selectedGroup);
+  if(selectedGroup!=="all") query=query.eq("group_id",selectedGroup);
   const {data,error}=await query;
   if(error){
     tbody.innerHTML='<tr><td colspan="9" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
     message("تعذر تحميل الطلاب: "+error.message,"error");
     return;
   }
-  if(!data?.length){tbody.innerHTML='<tr><td colspan="9" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الاختيار.</td></tr>';window.__studentRows={};return;}
+  if(!data?.length){tbody.innerHTML='<tr><td colspan="9" class="empty">لا توجد بيانات طلاب ظاهرة لهذا الحساب.</td></tr>';return;}
 
   const groupIds=[...new Set(data.map(row=>row.group_id).filter(Boolean))];
   let groupNames={};
@@ -893,11 +873,9 @@ async function openTransferStudentModal(){
   if(!currentProfile||!["manager","teacher"].includes(currentProfile.role)){message("لا تملك صلاحية نقل الطلاب.","error");return;}
   setTransferStudentModal(true);
   const from=$("transferFromGroup"),to=$("transferToGroup");from.innerHTML='<option value="">جارٍ تحميل الحلقات...</option>';to.innerHTML='<option value="">جارٍ تحميل الحلقات...</option>';
-  let query=db.from("groups").select("id,name,teacher_id").order("name").limit(500);
-  if(currentProfile.role==="teacher")query=query.eq("teacher_id",currentProfile.id);
-  const {data,error}=await query;
-  if(error){message("تعذر تحميل الحلقات المتاحة: "+error.message,"error");return;}
-  const groups=data||[];const options='<option value="">اختر الحلقة</option>'+groups.map(g=>`<option value="${escapeHtml(g.id)}">${escapeHtml(g.name||"حلقة بدون اسم")}</option>`).join("");
+  await loadGroupOptions();
+  const groups=window.__allGroups||[];
+  const options='<option value="">اختر الحلقة</option>'+groups.map(g=>`<option value="${escapeHtml(g.id)}">${escapeHtml(g.name||"حلقة بدون اسم")}</option>`).join("");
   from.innerHTML='<option value="">اختر الحلقة الحالية</option><option value="__unassigned__">بدون حلقة</option>'+groups.map(g=>`<option value="${escapeHtml(g.id)}">${escapeHtml(g.name||"حلقة بدون اسم")}</option>`).join("");to.innerHTML=options;
   $("transferStudentStatus").textContent=currentProfile.role==="manager"?"يمكنك النقل بين أي حلقتين، حتى إن كان المعلمان مختلفين.":"يمكنك نقل الطلاب الذين أضفتهم بدون حلقة إلى إحدى حلقاتك، أو النقل بين الحلقات المسندة إلى حسابك.";
   $("saveTransferStudentBtn").disabled=groups.length<1;
@@ -933,7 +911,7 @@ async function saveStudentTransfer(event){
     const {data,error}=await transferQuery.select("id,group_id").maybeSingle();
     if(error)throw error;if(!data||data.group_id!==to)throw new Error("لم يتم نقل الطالب. قد تمنع سياسات الصلاحيات هذا النقل.");
     setTransferStudentModal(false);message("تم نقل الطالب إلى الحلقة الجديدة بنجاح.","info");
-    await Promise.all([loadStudents(),loadGroups(),loadStatistics(),loadGroupOptions()]);
+    await Promise.all([loadStudents(),loadGroups(),loadStatistics(),loadGroupOptions(true)]);
   }catch(err){message("تعذر نقل الطالب: "+(err?.message||"خطأ غير معروف"),"error");}
   finally{btn.disabled=false;btn.textContent="تأكيد النقل";}
 }
@@ -963,7 +941,7 @@ async function saveGroupEdit(event){
     if(result.error&&/group_type|column .* does not exist|schema cache/i.test(result.error.message||"")){delete updates.group_type;result=await db.from("groups").update(updates).eq("id",id).select("id,name,teacher_id,logo_url").maybeSingle();}
     if(result.error&&/logo_url|column .* does not exist|schema cache/i.test(result.error.message||"")){delete updates.logo_url;result=await db.from("groups").update(updates).eq("id",id).select("id,name,teacher_id").maybeSingle();}
     if(result.error)throw result.error;if(!result.data)throw new Error("لم يتم تعديل الحلقة؛ تحقق من صلاحيات RLS.");
-    setEditGroupModal(false);message("تم حفظ تعديلات الحلقة بنجاح.","info");await Promise.all([loadGroups(),loadGroupOptions(),loadStatistics()]);
+    setEditGroupModal(false);message("تم حفظ تعديلات الحلقة بنجاح.","info");await Promise.all([loadGroups(),loadGroupOptions(true),loadStatistics()]);
   }catch(err){$("editGroupStatus").textContent="تعذر حفظ التعديلات: "+(err?.message||"خطأ غير معروف");message($("editGroupStatus").textContent,"error");}
   finally{btn.disabled=false;btn.textContent="حفظ التعديلات";}
 }
@@ -1005,7 +983,7 @@ async function saveGroupReassignment(event){
     }
     setReassignGroupModal(false);
     message("تم إسناد الحلقة إلى المعلم الجديد بنجاح.","info");
-    await Promise.all([loadGroups(),loadStatistics(),loadGroupOptions()]);
+    await Promise.all([loadGroups(),loadStatistics(),loadGroupOptions(true)]);
   }catch(err){message("تعذر تغيير المعلم المسؤول. التفاصيل: "+(err?.message||"خطأ غير معروف"),"error");}
   finally{button.disabled=false;button.textContent="حفظ الإسناد";}
 }
@@ -1021,13 +999,49 @@ function closeStudentManageModal(){setStudentManageModal(false);managingStudentI
 $("closeStudentManageModal").addEventListener("click",closeStudentManageModal);
 $("cancelStudentManageModal").addEventListener("click",closeStudentManageModal);
 $("studentManageBackdrop").addEventListener("click",e=>{if(e.target===$("studentManageBackdrop"))closeStudentManageModal();});
-function refreshManageStudentOptions(){
- const groupId=$("manageStudentGroup").value, select=$("manageStudentSelect"), rows=Object.values(window.__studentRows||{});
- const current=select.value;
- const filtered=rows.filter(row=>!groupId||(groupId==="__unassigned__"?!row.group_id:(row.group_id||"")===groupId));
- select.innerHTML='<option value="">اختر الطالب</option>'+filtered.map(row=>`<option value="${escapeHtml(row.id)}">${escapeHtml(row.full_name||"بلا اسم")} · ${escapeHtml(row.group_id?(window.__studentGroupNames?.[row.group_id]||"حلقة غير متاحة"):"بدون حلقة")}</option>`).join("");
- if(filtered.some(row=>row.id===current))select.value=current;
- updateManageStudentActions();
+let manageStudentOptionsRequest=0;
+async function refreshManageStudentOptions(){
+ const requestId=++manageStudentOptionsRequest;
+ const groupId=$("manageStudentGroup").value, select=$("manageStudentSelect"), current=select.value;
+ select.disabled=true;select.innerHTML='<option value="">جارٍ تحميل الطلاب...</option>';
+ try{
+   let query=db.from("students").select("id,full_name,group_id,created_by,gender,birth_date,residence,phone,notes,registration_date,group_type,created_at,updated_at").order("full_name").limit(1000);
+   if(groupId==="__unassigned__")query=query.is("group_id",null);
+   else if(groupId)query=query.eq("group_id",groupId);
+   else if(currentProfile?.role==="teacher"){
+     const assignedGroups=(window.__allGroups||[]).map(group=>group.id);
+     if(assignedGroups.length)query=query.in("group_id",assignedGroups);
+     else query=query.eq("created_by",currentProfile.id).is("group_id",null);
+   }
+   const {data,error}=await query;
+   if(requestId!==manageStudentOptionsRequest)return;
+   if(error)throw error;
+   let rows=data||[];
+   if(currentProfile?.role==="teacher"){
+     if(groupId==="__unassigned__")rows=rows.filter(row=>row.created_by===currentProfile.id);
+     else if(groupId)rows=rows.filter(row=>(window.__allGroups||[]).some(group=>group.id===row.group_id));
+     else rows=rows.filter(row=>(row.group_id&&(window.__allGroups||[]).some(group=>group.id===row.group_id))||(!row.group_id&&row.created_by===currentProfile.id));
+   }
+   const groupIds=[...new Set(rows.map(row=>row.group_id).filter(Boolean))];
+   if(groupIds.length){
+     const {data:groups,error:groupsError}=await db.from("groups").select("id,name,teacher_id").in("id",groupIds);
+     if(requestId!==manageStudentOptionsRequest)return;
+     if(!groupsError){
+       window.__studentGroupNames={...(window.__studentGroupNames||{}),...Object.fromEntries((groups||[]).map(group=>[group.id,group.name||("حلقة "+group.id)]))};
+       window.__studentGroupOwners={...(window.__studentGroupOwners||{}),...Object.fromEntries((groups||[]).map(group=>[group.id,group.teacher_id]))};
+     }
+   }
+   window.__studentRows={...(window.__studentRows||{}),...Object.fromEntries(rows.map(row=>[row.id,row]))};
+   select.innerHTML='<option value="">اختر الطالب</option>'+rows.map(row=>`<option value="${escapeHtml(row.id)}">${escapeHtml(row.full_name||"بلا اسم")} · ${escapeHtml(row.group_id?(window.__studentGroupNames?.[row.group_id]||"حلقة غير متاحة"):"بدون حلقة")}</option>`).join("");
+   if(rows.some(row=>row.id===current))select.value=current;
+   if(!rows.length)select.innerHTML='<option value="">لا يوجد طلاب ضمن هذا الاختيار</option>';
+ }catch(error){
+   if(requestId!==manageStudentOptionsRequest)return;
+   select.innerHTML='<option value="">تعذر تحميل الطلاب</option>';
+   message("تعذر تحميل قائمة الطلاب: "+(error?.message||"خطأ غير معروف"),"error");
+ }finally{
+   if(requestId===manageStudentOptionsRequest){select.disabled=false;updateManageStudentActions();}
+ }
 }
 function updateManageStudentActions(){
  managingStudentId=$("manageStudentSelect").value||null;
@@ -1040,11 +1054,13 @@ function updateManageStudentActions(){
  $("studentManageTitle").textContent=row?"إدارة الطالب: "+(row.full_name||"بلا اسم"):"إدارة الطلاب";
  $("manageStudentStatus").textContent=!row?"اختر الحلقة ثم الطالب، وبعدها اختر الإجراء المطلوب.":(!canEdit&&!canDelete?"لا تتوفر لك صلاحية تعديل هذا الطالب أو حذفه.":"اختر الإجراء المطلوب للطالب المحدد.");
 }
-function openStudentManageModal(action){
- $("manageStudentGroup").innerHTML='<option value="">كل الحلقات</option><option value="__unassigned__">بدون حلقة</option>'+Object.entries(window.__studentGroupNames||{}).map(([id,name])=>`<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`).join("");
- $("manageStudentGroup").value="";$("manageStudentSelect").value="";refreshManageStudentOptions();
+async function openStudentManageModal(action){
+ const groupSelect=$("manageStudentGroup");
+ groupSelect.innerHTML='<option value="">كل الحلقات</option><option value="__unassigned__">بدون حلقة</option>'+((window.__allGroups||[]).map(group=>`<option value="${escapeHtml(group.id)}">${escapeHtml(group.name||("حلقة "+group.id))}</option>`).join(""));
+ groupSelect.value="";$("manageStudentSelect").value="";
  $("manageStudentStatus").textContent=action==="delete"?"اختر الحلقة والطالب الذي تريد حذفه.":"اختر الحلقة والطالب الذي تريد تعديل بياناته.";
  setStudentManageModal(true);
+ await refreshManageStudentOptions();
 }
 $("openManageStudentModal").addEventListener("click",()=>openStudentManageModal("edit"));
 $("openDeleteStudentModal").addEventListener("click",()=>openStudentManageModal("delete"));
@@ -1156,7 +1172,7 @@ document.addEventListener("click",async event=>{
   const {count:attendanceCount,error:attendanceErr}=await db.from("attendance_records").select("id",{count:"exact",head:true}).eq("group_id",id);if(attendanceErr && !/does not exist|schema cache/i.test(attendanceErr.message||""))throw attendanceErr;
   if((attendanceCount||0)>0)throw new Error("لا يمكن حذف الحلقة لأنها مرتبطة بسجلات حضور.");
   const {data,error}=await db.from("groups").delete().eq("id",id).select("id");if(error)throw error;if(!data?.length)throw new Error("لم تُحذف الحلقة؛ تحقق من سياسات RLS وصلاحيات قاعدة البيانات.");
-  message("تم حذف الحلقة الفارغة.","info");await Promise.all([loadGroups(),loadGroupOptions(),loadStudents(),refreshOverviewCounts(),loadStatistics()]);
+  message("تم حذف الحلقة الفارغة.","info");await Promise.all([loadGroups(),loadGroupOptions(true),loadStudents(),refreshOverviewCounts(),loadStatistics()]);
  }catch(err){message("تعذر حذف الحلقة: "+(err?.message||"خطأ غير معروف"),"error");btn.disabled=false;}
 });
 async function createGroup(event){
@@ -1189,7 +1205,7 @@ async function createGroup(event){
     setCreateGroupModal(false);
     message("تم إنشاء الحلقة بنجاح.","info");
     await loadGroups();
-    await loadGroupOptions();
+    await loadGroupOptions(true);
     if(currentProfile.role==="manager"){
       const {count,error:countError}=await db.from("groups").select("*",{count:"exact",head:true});
       if(!countError)$("groupsCount").textContent=count??0;
@@ -1397,6 +1413,65 @@ async function exportMonthlyAttendance(){
   }catch(err){message("تعذر تصدير الحضور الشهري: "+(err?.message||"خطأ غير معروف"),"error");}
   finally{button.disabled=false;button.textContent=oldText;}
 }
+
+async function resetMonthlyAttendance(){
+  if(!currentProfile || currentProfile.role!=="manager"){
+    message("تصفير الحضور متاح للمدير فقط.","error");return;
+  }
+  // Temporarily disabled: align endpoint without allowing any deletion until backend auth is verified.
+  message("ميزة تصفير الحضور موقوفة مؤقتًا حفاظًا على السجلات. لم يتم حذف أي بيانات.","info");return;
+  const monthValue=$("attendanceExportMonth").value || ($("attendanceDate").value||todayISO()).slice(0,7);
+  if(!/^\d{4}-\d{2}$/.test(monthValue)){message("اختر الشهر المطلوب أولًا.","error");return;}
+  $("attendanceExportMonth").value=monthValue;
+  const startDate=monthValue+"-01";
+  const endDate=new Date(Number(monthValue.slice(0,4)),Number(monthValue.slice(5,7)),1).toISOString().slice(0,10);
+  const button=$("resetMonthlyAttendanceBtn");
+  const oldText=button.textContent;
+  button.disabled=true;button.textContent="جارٍ إعداد النسخة الاحتياطية...";
+  try{
+    // Read all rows for the selected month in pages, before requesting deletion.
+    let records=[],from=0,pageSize=1000;
+    while(true){
+      const {data,error}=await db.from("attendance_records")
+        .select("id,student_id,group_id,attendance_date,status,note,marked_by,created_at,updated_at")
+        .gte("attendance_date",startDate).lt("attendance_date",endDate)
+        .order("attendance_date",{ascending:true}).range(from,from+pageSize-1);
+      if(error)throw error;
+      const page=data||[];records=records.concat(page);
+      if(page.length<pageSize)break;
+      from+=pageSize;
+    }
+    if(!records.length){message("لا توجد سجلات حضور في "+monthValue+"؛ لم يتم حذف أي شيء.","info");return;}
+    const esc=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+    const headers=["id","student_id","group_id","attendance_date","status","note","marked_by","created_at","updated_at"];
+    const csv="\uFEFF"+[headers.map(esc).join(";"),...records.map(r=>headers.map(h=>esc(r[h])).join(";"))].join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="نسخة-احتياطية-للحضور-"+monthValue+".csv";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    // Give the browser a moment to start the download before asking to proceed.
+    await new Promise(resolve=>setTimeout(resolve,700));
+    const confirmed=await confirmDialog({
+      title:"تأكيد تصفير حضور الشهر",
+      text:`تم تجهيز نسخة CSV احتياطية تضم ${records.length} سجلًا لشهر ${monthValue} وتنزيلها. هل تريد الآن حذف سجلات الحضور لهذا الشهر من Supabase نهائيًا؟ لا يمكن التراجع عن الحذف من داخل النظام.`,
+      confirmText:"نعم، احذف سجلات الشهر",
+      danger:true
+    });
+    if(!confirmed){message("أُلغي التصفير. لم تُحذف أي سجلات.","info");return;}
+    button.textContent="جارٍ حذف سجلات الشهر...";
+    const {data,error}=await db.functions.invoke("reset-attendance-month-ts",{body:{month:monthValue}});
+    if(error){
+      let details=error.message||"تعذر الاتصال بوظيفة التصفير.";
+      try{if(error.context&&typeof error.context.json==="function"){const body=await error.context.json();if(body?.error)details=body.error;}}catch(_){}
+      throw new Error(details);
+    }
+    message(`تم حذف ${data?.deleted_count??records.length} سجل حضور لشهر ${monthValue} بعد إعداد النسخة الاحتياطية.`,"success");
+    if(activeGroupId)await loadAttendanceForDate();
+  }catch(err){
+    message("تعذر تصفير الحضور: "+(err?.message||"خطأ غير معروف"),"error");
+  }finally{button.disabled=false;button.textContent=oldText;}
+}
+$("resetMonthlyAttendanceBtn").addEventListener("click",resetMonthlyAttendance);
 
 $("loadAttendanceBtn").addEventListener("click",loadAttendanceForDate);
 $("saveAttendanceBtn").addEventListener("click",saveAttendance);
