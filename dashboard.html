@@ -788,8 +788,10 @@ async function addStudent(event){
 async function loadStudents(){
   const tbody=$("studentsRows");
   const selectedGroup=$("studentGroupFilter").value;
-  if(!selectedGroup){
-    tbody.innerHTML='<tr><td colspan="9" class="empty">اختر الحلقة أو «كل الحلقات» لعرض بيانات الطلاب.</td></tr>';
+  const searchTerm=$("studentSearch").value.trim();
+  // عند اختيار النص الافتراضي، يسمح البحث باسم الطالب دون اشتراط اختيار حلقة.
+  if(!selectedGroup&&!searchTerm){
+    tbody.innerHTML='<tr><td colspan="9" class="empty">اختر الحلقة أو «كل الحلقات»، أو أدخل اسم الطالب للبحث في جميع الطلاب المتاحين لهذا الحساب.</td></tr>';
     window.__studentRows={};
     return;
   }
@@ -797,8 +799,8 @@ async function loadStudents(){
 let query = db.from("students")
     .select("id, full_name, group_id, group_type, registration_date, created_by, notes, gender, birth_date, residence, phone, created_at, updated_at")
     .order("created_at", { ascending: false }).limit(100);
-  if($("studentSearch").value.trim()) query=query.ilike("full_name","%"+$("studentSearch").value.trim()+"%");
-  if(selectedGroup!=="all") query=query.eq("group_id",selectedGroup);
+  if(searchTerm) query=query.ilike("full_name","%"+searchTerm+"%");
+  if(selectedGroup&&selectedGroup!=="all") query=query.eq("group_id",selectedGroup);
   const {data,error}=await query;
   if(error){
     tbody.innerHTML='<tr><td colspan="9" class="empty">تعذر تحميل الطلاب. راجع صلاحيات RLS ثم أعد المحاولة.</td></tr>';
